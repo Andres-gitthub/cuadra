@@ -2,11 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { claveMes, desplazarMes, formatearImporte, mesActual, nombreMes, parseMes, rangoMes } from "@/lib/dates";
 import { desglosePorCategoria, totalImportes } from "@/lib/resumen";
 import { COLUMNAS_MOVIMIENTO, type Movimiento } from "@/lib/types";
-import { cerrarSesion } from "@/app/actions";
 import { SelectorMes } from "./SelectorMes";
 import { DesgloseCategorias } from "./DesgloseCategorias";
 import { MovimientosLista } from "./MovimientosLista";
 import { BarraInferior } from "./BarraInferior";
+import { CabeceraLibreta } from "./CabeceraLibreta";
+import { CerrarSesion } from "./CerrarSesion";
 
 type Params = Promise<{ mes?: string; cat?: string }>;
 
@@ -52,16 +53,11 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
   return (
     <>
       <main className="page con-barra">
-        <header className="resumen">
-          <div className="resumen-arriba">
-            <SelectorMes mes={mes} esActual={esActual} />
-            <form action={cerrarSesion}>
-              <button className="enlace-discreto">Salir</button>
-            </form>
-          </div>
+        <CabeceraLibreta>
+          <SelectorMes mes={mes} esActual={esActual} />
           <p className="total">{formatearImporte(total)}</p>
           <p className="subtitulo">{lineaResumen(movimientos.length, total, totalAnterior, nombreMes(anterior, false))}</p>
-        </header>
+        </CabeceraLibreta>
 
         {error && <p className="error">Error cargando datos: {error.message}</p>}
 
@@ -72,6 +68,7 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
           volver={volver}
           vacio={cat ? "No hay movimientos de esta categoría este mes." : "Aún no hay movimientos este mes."}
         />
+        <CerrarSesion />
       </main>
       <BarraInferior pendientes={pendientes.count ?? 0} />
     </>
@@ -79,10 +76,10 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
 }
 
 function lineaResumen(n: number, total: number, totalAnterior: number, mesAnterior: string): string {
-  const cuantos = `${n} movimiento${n === 1 ? "" : "s"}`;
+  const cuantos = `${n} ${n === 1 ? "gasto" : "gastos"}`;
   if (totalAnterior <= 0) return cuantos;
   const diferencia = Math.round((total - totalAnterior) * 100) / 100;
-  if (diferencia === 0) return `${cuantos} · igual que ${mesAnterior}`;
+  if (diferencia === 0) return `${cuantos}, igual que en ${mesAnterior}`;
   const cuanto = formatearImporte(Math.abs(diferencia));
-  return `${cuantos} · ${cuanto} ${diferencia < 0 ? "menos" : "más"} que ${mesAnterior}`;
+  return `${cuantos}, ${cuanto} ${diferencia < 0 ? "menos" : "más"} que en ${mesAnterior}`;
 }

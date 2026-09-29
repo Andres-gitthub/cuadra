@@ -59,7 +59,8 @@ export async function verificarCodigo(_prev: EstadoLogin, formData: FormData): P
 
 export async function cerrarSesion() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  // Solo este dispositivo: cerrar sesión en el ordenador no debe sacar al iPhone.
+  await supabase.auth.signOut({ scope: "local" });
   redirect("/login");
 }
 
