@@ -1,11 +1,12 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { normalizeIngestBody } from "@/lib/ingest-input";
+import { comprobarToken } from "@/lib/ingest-auth";
 import { guardarMovimiento } from "@/lib/ingest";
 
 export async function POST(request: NextRequest) {
-  if (!tokenValido(request.headers.get("authorization"))) {
-    return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+  const auth = comprobarToken(request.headers.get("authorization"), process.env.INGEST_TOKEN);
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: `No autorizado: ${auth.motivo}` }, { status: 401 });
   }
 
   let body: unknown;
@@ -35,14 +36,4 @@ export async function POST(request: NextRequest) {
     console.error("[ingest]", e);
     return NextResponse.json({ ok: false, error: "Error interno al guardar" }, { status: 500 });
   }
-}
-
-/** Compara "Bearer <token>" con INGEST_TOKEN en tiempo constante. Sin INGEST_TOKEN configurado, rechaza todo. */
-function tokenValido(header: string | null): boolean {
-  const esperado = process.env.INGEST_TOKEN;
-  if (!esperado || !header?.startsWith("Bearer ")) return false;
-  const recibido = header.slice("Bearer ".length).trim();
-  const a = createHash("sha256").update(recibido).digest();
-  const b = createHash("sha256").update(esperado).digest();
-  return timingSafeEqual(a, b);
 }
