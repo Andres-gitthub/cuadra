@@ -43,18 +43,71 @@ export function utcAHoraLocal(fecha: Date): string {
   return `${p.y}-${z(p.m)}-${z(p.d)}T${z(p.h)}:${z(p.min)}`;
 }
 
-/** Inicio del mes actual y del siguiente (hora de Madrid) en UTC. */
-export function rangoMesActual(ahora = new Date()): { desde: Date; hasta: Date; nombre: string } {
+// ---------- Meses ----------
+
+export type Mes = { y: number; m: number }; // m: 1..12
+
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"];
+const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const z2 = (n: number) => String(n).padStart(2, "0");
+
+export function mesActual(ahora = new Date()): Mes {
   const p = partesEnZona(ahora);
-  const sigY = p.m === 12 ? p.y + 1 : p.y;
-  const sigM = p.m === 12 ? 1 : p.m + 1;
-  const z = (n: number) => String(n).padStart(2, "0");
-  const nombre = new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, month: "long", year: "numeric" }).format(ahora);
+  return { y: p.y, m: p.m };
+}
+
+/** "2026-08" → { y: 2026, m: 8 }. Si es inválido o futuro, devuelve el mes actual. */
+export function parseMes(param: string | undefined, ahora = new Date()): Mes {
+  const actual = mesActual(ahora);
+  const m = param?.match(/^(\d{4})-(\d{2})$/);
+  if (!m) return actual;
+  const mes = { y: Number(m[1]), m: Number(m[2]) };
+  if (mes.m < 1 || mes.m > 12) return actual;
+  if (mes.y * 12 + mes.m > actual.y * 12 + actual.m) return actual;
+  return mes;
+}
+
+export function desplazarMes(mes: Mes, delta: number): Mes {
+  const indice = mes.y * 12 + (mes.m - 1) + delta;
+  return { y: Math.floor(indice / 12), m: (indice % 12) + 1 };
+}
+
+export function claveMes(mes: Mes): string {
+  return `${mes.y}-${z2(mes.m)}`;
+}
+
+export function nombreMes(mes: Mes, conAño = true): string {
+  return conAño ? `${MESES[mes.m - 1]} ${mes.y}` : MESES[mes.m - 1];
+}
+
+/** Inicio del mes y del siguiente (hora de Madrid) en UTC. */
+export function rangoMes(mes: Mes): { desde: Date; hasta: Date } {
+  const sig = desplazarMes(mes, 1);
   return {
-    desde: horaLocalAUtc(`${p.y}-${z(p.m)}-01T00:00`)!,
-    hasta: horaLocalAUtc(`${sigY}-${z(sigM)}-01T00:00`)!,
-    nombre,
+    desde: horaLocalAUtc(`${mes.y}-${z2(mes.m)}-01T00:00`)!,
+    hasta: horaLocalAUtc(`${sig.y}-${z2(sig.m)}-01T00:00`)!,
   };
+}
+
+// ---------- Días ----------
+
+/** Fecha ISO → "2026-09-28" (día en hora de Madrid). */
+export function claveDia(iso: string): string {
+  const p = partesEnZona(new Date(iso));
+  return `${p.y}-${z2(p.m)}-${z2(p.d)}`;
+}
+
+/** "2026-09-28" → "Hoy", "Ayer" o "lunes, 21 sept" (con año si no es el actual). */
+export function etiquetaDia(clave: string, ahora = new Date()): string {
+  const hoy = claveDia(ahora.toISOString());
+  if (clave === hoy) return "Hoy";
+  const ayer = claveDia(new Date(ahora.getTime() - 24 * 3600 * 1000).toISOString());
+  if (clave === ayer) return "Ayer";
+  const [y, m, d] = clave.split("-").map(Number);
+  const diaSemana = DIAS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  const año = y === mesActual(ahora).y ? "" : ` ${y}`;
+  return `${diaSemana}, ${d} ${MESES_CORTOS[m - 1]}${año}`;
 }
 
 export function formatearFecha(iso: string): string {
@@ -70,4 +123,8 @@ export function formatearFecha(iso: string): string {
 export function formatearImporte(n: number | null, moneda = "EUR"): string {
   if (n === null) return "¿? €";
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: moneda }).format(n);
+}
+
+export function formatearHora(iso: string): string {
+  return new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
 }

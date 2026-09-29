@@ -1,30 +1,40 @@
-import Link from "next/link";
-import { formatearFecha, formatearImporte } from "@/lib/dates";
+import { formatearHora, formatearImporte } from "@/lib/dates";
+import { agruparPorDia } from "@/lib/resumen";
 import type { Movimiento } from "@/lib/types";
+import { FilaMovimiento } from "./FilaMovimiento";
 
-const ETIQUETA_ORIGEN = { manual: "Manual", wallet: "Wallet", sms: "SMS" } as const;
+type Props = { movimientos: Movimiento[]; volver: string; vacio?: string };
 
-export function MovimientosLista({ movimientos, volver }: { movimientos: Movimiento[]; volver: string }) {
-  if (movimientos.length === 0) return <p className="muted vacio">No hay movimientos.</p>;
+/** Movimientos agrupados por día, con el subtotal de cada día. */
+export function MovimientosLista({ movimientos, volver, vacio = "No hay movimientos." }: Props) {
+  if (movimientos.length === 0) return <p className="vacio">{vacio}</p>;
 
   return (
-    <ul className="lista">
-      {movimientos.map((m) => (
-        <li key={m.id}>
-          <Link href={`/movimiento/${m.id}?volver=${encodeURIComponent(volver)}`} className="fila">
-            <div className="fila-info">
-              <span className="comercio">
-                {!m.revisado && <span className="punto" aria-label="Pendiente de revisar" />}
-                {m.comercio ?? <em>Sin comercio</em>}
-              </span>
-              <span className="muted pequeño">
-                {formatearFecha(m.fecha)} · {m.categories?.nombre ?? "Sin categoría"} · {ETIQUETA_ORIGEN[m.origen]}
-              </span>
-            </div>
-            <span className="importe">{formatearImporte(m.importe, m.moneda)}</span>
-          </Link>
-        </li>
+    <div className="dias">
+      {agruparPorDia(movimientos).map((dia) => (
+        <section key={dia.clave} aria-label={dia.etiqueta}>
+          <h3 className="cabecera-dia">
+            <span>{dia.etiqueta}</span>
+            <span>{dia.total > 0 ? formatearImporte(dia.total) : ""}</span>
+          </h3>
+          <ul className="tarjeta lista">
+            {dia.movimientos.map((m) => (
+              <FilaMovimiento
+                key={m.id}
+                id={m.id}
+                comercio={m.comercio}
+                categoria={m.categories?.nombre ?? null}
+                importe={m.importe}
+                moneda={m.moneda}
+                origen={m.origen}
+                revisado={m.revisado}
+                hora={formatearHora(m.fecha)}
+                volver={volver}
+              />
+            ))}
+          </ul>
+        </section>
       ))}
-    </ul>
+    </div>
   );
 }

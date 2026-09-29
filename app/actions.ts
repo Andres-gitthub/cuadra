@@ -8,6 +8,7 @@ import { parseAmount } from "@/lib/amount";
 import { limpiarComercio } from "@/lib/sms-parser";
 import { categorize } from "@/lib/categorize";
 import { horaLocalAUtc } from "@/lib/dates";
+import { rutaSegura } from "@/lib/rutas";
 import type { EstadoFormulario } from "@/lib/types";
 
 // ---------- Login (magic link + código de 6 dígitos) ----------
@@ -71,7 +72,7 @@ export async function guardarMovimientoManual(
   const { supabase } = await requireUser();
 
   const id = String(formData.get("id") ?? "");
-  const volver = String(formData.get("volver") ?? "/") === "/pendientes" ? "/pendientes" : "/";
+  const volver = rutaSegura(formData.get("volver"));
   const importe = parseAmount(String(formData.get("importe") ?? ""));
   const comercio = limpiarComercio(String(formData.get("comercio") ?? ""));
   const fecha = horaLocalAUtc(String(formData.get("fecha") ?? ""));
@@ -106,9 +107,10 @@ export async function guardarMovimientoManual(
 export async function borrarMovimiento(formData: FormData) {
   const { supabase } = await requireUser();
   const id = String(formData.get("id") ?? "");
-  const volver = String(formData.get("volver") ?? "/") === "/pendientes" ? "/pendientes" : "/";
+  const volver = rutaSegura(formData.get("volver"));
   if (id) await supabase.from("transactions").delete().eq("id", id);
   revalidatePath("/");
   revalidatePath("/pendientes");
   redirect(volver);
 }
+

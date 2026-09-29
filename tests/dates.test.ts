@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { horaLocalAUtc, utcAHoraLocal, rangoMesActual } from "../lib/dates.ts";
+import { horaLocalAUtc, utcAHoraLocal, rangoMes, mesActual } from "../lib/dates.ts";
 
 test("hora de Madrid en verano (UTC+2) e invierno (UTC+1)", () => {
   assert.equal(horaLocalAUtc("2026-07-15T10:00")!.toISOString(), "2026-07-15T08:00:00.000Z");
@@ -12,7 +12,7 @@ test("ida y vuelta", () => {
 });
 
 test("rango del mes en hora de Madrid", () => {
-  const r = rangoMesActual(new Date("2026-09-30T23:30:00Z")); // ya es 1 de octubre en Madrid
+  const r = rangoMes(mesActual(new Date("2026-09-30T23:30:00Z"))); // ya es 1 de octubre en Madrid
   assert.equal(r.desde.toISOString(), "2026-09-30T22:00:00.000Z");
   assert.equal(r.hasta.toISOString(), "2026-10-31T23:00:00.000Z");
 });

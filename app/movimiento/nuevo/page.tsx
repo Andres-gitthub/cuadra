@@ -9,13 +9,17 @@ export default async function NuevoPage() {
 
   return (
     <main className="page">
-      <Link href="/" className="volver">
-        ← Cancelar
-      </Link>
-      <h1>Nuevo gasto</h1>
+      <nav className="barra-superior">
+        <Link href="/" className="volver">
+          Cancelar
+        </Link>
+        <span className="titulo-barra">Nuevo gasto</span>
+        <span />
+      </nav>
       <MovimientoForm
         categorias={categorias ?? []}
         volver="/"
+        etiquetaFecha="Ahora"
         inicial={{ importe: "", comercio: "", categoria_id: "auto", fecha: utcAHoraLocal(new Date()) }}
       />
     </main>

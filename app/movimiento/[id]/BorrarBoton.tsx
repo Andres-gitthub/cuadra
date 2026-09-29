@@ -2,7 +2,9 @@
 
 import { borrarMovimiento } from "@/app/actions";
 
-export function BorrarBoton({ id, volver }: { id: string; volver: string }) {
+type Props = { id: string; volver: string; texto?: string; className?: string };
+
+export function BorrarBoton({ id, volver, texto = "Borrar movimiento", className = "btn btn-peligro" }: Props) {
   return (
     <form
       action={borrarMovimiento}
@@ -12,7 +14,7 @@ export function BorrarBoton({ id, volver }: { id: string; volver: string }) {
     >
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="volver" value={volver} />
-      <button className="btn btn-peligro">Borrar</button>
+      <button className={className}>{texto}</button>
     </form>
   );
 }
