@@ -27,10 +27,22 @@ export async function enviarCodigo(_prev: EstadoLogin, formData: FormData): Prom
     options: { shouldCreateUser: false, emailRedirectTo: `${origin}/auth/confirm` },
   });
   if (error) {
-    console.error("[login]", error.message);
-    return { error: "No se pudo enviar el email. ¿Es el email correcto?", email: null };
+    console.error("[login]", error.code, error.status, error.message);
+    return { error: mensajeErrorEnvio(error), email: null };
   }
   return { error: null, email };
+}
+
+function mensajeErrorEnvio(error: { code?: string; status?: number; message: string }): string {
+  const espera = error.message.match(/after (\d+) seconds?/i);
+  if (espera) return `Espera ${espera[1]} segundos antes de pedir otro email.`;
+  if (error.code === "over_email_send_rate_limit" || error.status === 429) {
+    return "Se ha alcanzado el límite de emails de Supabase (unos pocos por hora). Espera un rato y vuelve a intentarlo.";
+  }
+  if (error.code === "otp_disabled" || error.code === "user_not_found" || /signups? not allowed/i.test(error.message)) {
+    return "Ese email no tiene acceso. Usa el email de tu usuario de Supabase.";
+  }
+  return `No se pudo enviar el email (${error.code ?? error.status ?? "error desconocido"}).`;
 }
 
 export async function verificarCodigo(_prev: EstadoLogin, formData: FormData): Promise<EstadoLogin> {
