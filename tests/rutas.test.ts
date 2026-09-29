@@ -12,6 +12,10 @@ test("rechaza destinos externos o raros", () => {
   assert.equal(rutaSegura("//evil.com"), "/");
   assert.equal(rutaSegura("/\\evil.com"), "/");
   assert.equal(rutaSegura("https://evil.com"), "/");
+  // El parser de URL elimina tabuladores y saltos de línea: "/\t/evil.com" acabaría en "//evil.com".
+  assert.equal(rutaSegura("/\t/evil.com"), "/");
+  assert.equal(rutaSegura("/\n/evil.com"), "/");
+  assert.equal(rutaSegura("/\r\n/evil.com"), "/");
   assert.equal(rutaSegura(null), "/");
   assert.equal(rutaSegura(undefined), "/");
 });

@@ -56,7 +56,8 @@ button {
 }
 
 .page.con-barra {
-  padding-bottom: calc(env(safe-area-inset-bottom) + var(--alto-barra) + 32px);
+  /* Hueco para la barra y para el botón + flotante, que si no tapa la última fila. */
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--alto-barra) + 96px);
 }
 
 .tarjeta {
