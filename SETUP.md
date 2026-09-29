@@ -40,13 +40,18 @@ La app necesita estas 5 variables. Irás apuntando sus valores durante la guía:
    - **Database Password:** pulsa **Generate a password** y guárdala en tu gestor de contraseñas (no la necesitará la app).
    - **Region:** una de Europa (p. ej. *Central EU (Frankfurt)*).
    - Plan **Free**.
+   - **Security:** deja marcado **Enable Data API**, desmarca **Automatically expose new tables** y marca **Enable automatic RLS**. (La migración del paso 1.2 da los permisos necesarios a mano.)
 3. **Create new project** y espera 1–2 minutos.
+
+> Si aparece *"You need additional permissions to create a project"*, no eres Owner de esa organización: crea una tuya en el selector de arriba → **New organization** (plan Free) y crea el proyecto dentro.
 
 ### 1.2 Crear las tablas
 1. Menú izquierdo → **SQL Editor** → **New query**.
 2. Abre el archivo `supabase/migrations/0001_init.sql` de este proyecto, copia **todo** su contenido y pégalo.
-3. Pulsa **Run**. Debe aparecer *Success. No rows returned*.
+3. Pulsa **Run**. Debe aparecer *Success. No rows returned*. (Si Supabase avisa de operaciones potencialmente destructivas, confirma: el script solo crea cosas.)
 4. Comprueba en **Table Editor** que existen las tablas `transactions` y `categories`.
+
+> El script se puede ejecutar varias veces sin problema: lo que ya existe se mantiene y lo que falta se crea. Si algo salió a medias, vuelve a ejecutarlo entero.
 
 ### 1.3 Crear tu usuario (el único que podrá entrar)
 1. **Authentication** → **Users** → **Add user** → **Create new user**.
@@ -66,12 +71,34 @@ La app necesita estas 5 variables. Irás apuntando sus valores durante la guía:
 2. Desactiva **Allow new users to sign up** y guarda.
    (La app ya lo impide, esto es una segunda barrera.)
 
-### 1.6 Email de acceso (enlace + código)
-En el iPhone, la app instalada y Safari no comparten la sesión: si pulsas el enlace del email se abre Safari, no la app. Por eso el email llevará también un **código** que escribirás dentro de la app.
+### 1.6 Email de acceso con código (necesita tu Gmail)
+En el iPhone, la app instalada y Safari no comparten la sesión: si pulsas el enlace del email se abre Safari, no la app. Por eso el email debe llevar un **código** que escribirás dentro de la app.
 
-1. **Authentication** → **Emails** (o **Email Templates**) → plantilla **Magic Link**.
-2. **Subject:** `Tu acceso a Cuadra`
-3. Sustituye el cuerpo (**Body / Message**) por:
+Supabase solo deja cambiar el texto del email si lo envía **tu propio servidor de correo (SMTP)**. Además, su correo gratuito solo envía unos 2 emails por hora. Usaremos tu Gmail, gratis.
+
+**a) Contraseña de aplicación de Google** (usa un Gmail **personal**; las cuentas de universidad o empresa suelen tenerlo bloqueado)
+1. Activa la verificación en dos pasos: <https://myaccount.google.com/signinoptions/twosv>
+2. Abre <https://myaccount.google.com/apppasswords> → nombre `Supabase Cuadra` → **Crear**.
+3. Aparecen **16 letras** (`xxxx xxxx xxxx xxxx`). Cópialas **antes de cerrar** la ventana: no se pueden volver a ver (si la pierdes, crea otra).
+
+   Si sale *"La opción de configuración que buscas no está disponible para tu cuenta"*, falta la verificación en dos pasos o no es un Gmail personal.
+
+**b) SMTP en Supabase:** **Authentication** → **Emails** → **SMTP Settings** (o el botón **Set up SMTP**) → activa **Enable Custom SMTP**:
+
+| Campo | Valor |
+|---|---|
+| Sender email | tu Gmail |
+| Sender name | `Cuadra` |
+| Host | `smtp.gmail.com` |
+| Port number | `465` |
+| Username | tu Gmail (el mismo) |
+| Password | las 16 letras, **sin espacios** |
+
+**Save**. Si al pedir acceso la app dice *"No se pudo enviar el email (500)"*, Gmail ha rechazado estos datos: revisa usuario y contraseña (o mira el motivo en **Logs → Auth**).
+
+**c) Plantilla:** **Authentication** → **Emails** → **Templates** → **Magic link or OTP**.
+1. **Subject:** `Tu acceso a Cuadra`
+2. En **Body**, cambia a la vista **Source** y sustituye todo por:
 
    ```html
    <h2>Acceso a Cuadra</h2>
@@ -79,17 +106,18 @@ En el iPhone, la app instalada y Safari no comparten la sesión: si pulsas el en
    <p>Si estás en Safari (no en la app instalada), también puedes pulsar:
    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Entrar</a></p>
    ```
-4. **Save**.
-
-> ℹ️ El plan gratuito de Supabase envía pocos emails por hora (unos 2–4). Si pides varios seguidos y no llegan, espera un rato.
+3. **Save**.
 
 ### 1.7 Copiar las claves
 1. **Project Settings** (rueda dentada) → **Data API**: copia la **Project URL** → 👉 `NEXT_PUBLIC_SUPABASE_URL`.
-2. **Project Settings** → **API Keys**:
-   - La clave **anon public** (o **publishable**, empieza por `sb_publishable_`) → 👉 `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-   - La clave **service_role** (o **secret**, empieza por `sb_secret_`) → 👉 `SUPABASE_SERVICE_ROLE_KEY`. **No la compartas con nadie**: da acceso total a tu base de datos.
+2. **Project Settings** → **API Keys** → pestaña **Publishable and secret API keys** (usa estas, no las de la pestaña *Legacy*):
+   - **Publishable key → default** (empieza por `sb_publishable_`) → 👉 `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+   - **Secret keys → default** (empieza por `sb_secret_`; pulsa el ojo para verla) → 👉 `SUPABASE_SERVICE_ROLE_KEY`. **No la compartas con nadie** (ni la pegues en chats): da acceso total a tu base de datos. Si se filtra, crea otra con **New secret key** y borra la antigua.
+3. Cuando la app funcione con estas claves, ve a la pestaña **Legacy** → **Disable JWT-based API keys**, para anular las claves antiguas `eyJ…`.
 
-La URL del sitio (Site URL) se configura en el paso 3.4, cuando ya tengas la dirección de Vercel.
+> Si los botones de copiar dicen que no pueden usar el portapapeles, abre Supabase en Chrome o Edge normal (no en un navegador integrado en otra app), o selecciona el texto y pulsa **Ctrl+C**.
+
+La URL del sitio (Site URL) se configura en el paso 3.5, cuando ya tengas la dirección de Vercel.
 
 ---
 
@@ -125,25 +153,34 @@ Guárdalo en tu gestor de contraseñas. 👉 Es tu `INGEST_TOKEN`.
 
 ### 3.2 Crear el proyecto en Vercel
 1. Entra en <https://vercel.com> → **Sign Up** → **Continue with GitHub** (plan **Hobby**, gratuito).
-2. **Add New… → Project** → importa el repositorio `cuadra`.
+2. **Add New… → Project** → busca el repositorio `cuadra` → **Import**.
+   Si no aparece ("No Results Found"): **Configure GitHub App** → **Only select repositories** → marca `cuadra` → **Save**, y vuelve a Vercel.
 3. Framework: **Next.js** (se detecta solo). No cambies los comandos de build.
 
 ### 3.3 Añadir las variables de entorno
-Antes de pulsar Deploy, abre **Environment Variables** y añade las 5, una a una (nombre exacto + valor):
+Antes de crear el proyecto, abre **Environment Variables** y añade las 5 (nombre exacto + valor, que es lo que va **después del `=`** en tu `.env.local`):
 
-```
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
-OWNER_USER_ID
-INGEST_TOKEN
-```
+| Key | ¿Candado 🔒 (Sensitive)? |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | No |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Sí** |
+| `INGEST_TOKEN` | **Sí** |
+| `OWNER_USER_ID` | Opcional |
 
-Pulsa **Deploy** y espera 1–2 minutos. Tu app quedará en una dirección como `https://cuadra-xxxx.vercel.app`. 👉 Apúntala: la llamaremos **TU_URL**.
+Truco: si pegas todo el contenido de `.env.local` en el primer campo **Key**, a veces Vercel las reparte solas. Si no, pulsa **Add More** para cada una.
 
+Pulsa **Create Project** / **Deploy** y espera 1–2 minutos.
+
+> Si el proyecto queda en *"No Production Deployment"*: **Deployments** → **Create Deployment** → escribe `main` → **Create Deployment**.
+>
 > Si más adelante cambias una variable: **Settings → Environment Variables**, edítala y luego **Deployments → ⋯ → Redeploy** (las variables `NEXT_PUBLIC_…` solo se aplican al volver a desplegar).
 
-### 3.4 Decirle a Supabase cuál es tu URL
+### 3.4 Tu dirección y quitar el login de Vercel
+1. **Settings → Domains**: el dominio `….vercel.app` que aparece ahí es tu dirección de producción (p. ej. `https://cuadra-xxxx.vercel.app`). 👉 Apúntala: la llamaremos **TU_URL**.
+2. Abre `TU_URL` en el navegador. Si te sale una pantalla de login **de Vercel** en vez de la de Cuadra: **Settings → Deployment Protection** → **Vercel Authentication** → **Disabled** → **Save**. Sin esto, los Atajos del iPhone reciben un error 401 de Vercel. Es seguro: la app tiene su propio login y el endpoint exige tu token.
+
+### 3.5 Decirle a Supabase cuál es tu URL
 1. Supabase → **Authentication** → **URL Configuration**.
 2. **Site URL:** `TU_URL` (p. ej. `https://cuadra-xxxx.vercel.app`, sin barra final).
 3. **Redirect URLs** → **Add URL**: `TU_URL/**`. Si vas a probar en local, añade también `http://localhost:3000/**`.
