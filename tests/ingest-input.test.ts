@@ -35,6 +35,18 @@ test("source con mayúscula o espacios (teclado del iPhone)", () => {
   assert.equal(s.data.origen, "sms");
 });
 
+test("nombres de campo con espacios o mayúsculas", () => {
+  const r = normalizeIngestBody({ "source ": "wallet", Amount: "3,10", " merchant": "Kiosco" });
+  assert.ok(r.ok);
+  assert.equal(r.data.importe, 3.1);
+  assert.equal(r.data.comercio, "Kiosco");
+});
+
+test("sin source, el error dice qué campos llegaron", () => {
+  const r = normalizeIngestBody({ fuente: "wallet", amount: "1" });
+  assert.ok(!r.ok && /Campos recibidos: fuente, amount/.test(r.error));
+});
+
 test("cuerpos inválidos → error", () => {
   assert.equal(normalizeIngestBody(null).ok, false);
   assert.equal(normalizeIngestBody({ source: "otro" }).ok, false);

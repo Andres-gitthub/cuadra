@@ -17,9 +17,15 @@ const MAX_TEXTO = 2000;
 /** Valida el JSON que envía el Atajo y lo convierte en un movimiento. No toca la base de datos. */
 export function normalizeIngestBody(body: unknown): IngestResult {
   if (typeof body !== "object" || body === null) return { ok: false, error: "El cuerpo debe ser un objeto JSON" };
-  const b = body as Record<string, unknown>;
-  // El teclado del iPhone pone mayúscula inicial al escribir en Atajos ("Wallet", "Sms").
+  // En Atajos, el teclado del iPhone pone mayúscula inicial y el autocorrector añade espacios
+  // ("Wallet", "source "): se normalizan los nombres de los campos y el valor de source.
+  const b: Record<string, unknown> = Object.fromEntries(
+    Object.entries(body as Record<string, unknown>).map(([k, v]) => [k.replace(/[\s​-‍﻿]/g, "").toLowerCase(), v]),
+  );
   const source = typeof b.source === "string" ? b.source.trim().toLowerCase() : b.source;
+  if (source === undefined) {
+    return { ok: false, error: `Falta el campo 'source'. Campos recibidos: ${Object.keys(b).join(", ") || "ninguno"}` };
+  }
 
   if (source === "sms") {
     if (typeof b.text !== "string" || !b.text.trim()) return { ok: false, error: "Falta 'text' (texto del SMS)" };
