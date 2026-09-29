@@ -777,9 +777,11 @@ button {
   width: 100%;
 }
 
-.page > h1 {
-  font-size: 2rem;
-  margin: 24px 0 20px;
+.marca {
+  margin: 0;
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 /* ---------- Cabecera de libreta ---------- */

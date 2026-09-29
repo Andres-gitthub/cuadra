@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatearFecha, formatearImporte } from "@/lib/dates";
 import { COLUMNAS_MOVIMIENTO, type Movimiento } from "@/lib/types";
 import { BarraInferior } from "../BarraInferior";
+import { CabeceraLibreta } from "../CabeceraLibreta";
 import { IconoOrigen } from "../Iconos";
 import { BorrarBoton } from "../movimiento/[id]/BorrarBoton";
 
@@ -18,8 +19,10 @@ export default async function PendientesPage() {
   return (
     <>
       <main className="page con-barra">
-        <h1 className="titulo-grande">Pendientes</h1>
-        <p className="subtitulo">Movimientos que no se pudieron leer con seguridad.</p>
+        <CabeceraLibreta>
+          <h1 className="titulo-grande">Pendientes</h1>
+          <p className="subtitulo">Gastos que no se pudieron leer con seguridad. Revísalos o descártalos.</p>
+        </CabeceraLibreta>
         {error && <p className="error">Error cargando datos: {error.message}</p>}
 
         {pendientes.length === 0 && !error ? (
@@ -27,7 +30,7 @@ export default async function PendientesPage() {
             <span className="check" aria-hidden>
               ✓
             </span>
-            Todo revisado
+            No tienes nada pendiente de revisar.
           </div>
         ) : (
           <ul className="pendientes">
