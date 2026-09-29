@@ -18,8 +18,10 @@ const MAX_TEXTO = 2000;
 export function normalizeIngestBody(body: unknown): IngestResult {
   if (typeof body !== "object" || body === null) return { ok: false, error: "El cuerpo debe ser un objeto JSON" };
   const b = body as Record<string, unknown>;
+  // El teclado del iPhone pone mayúscula inicial al escribir en Atajos ("Wallet", "Sms").
+  const source = typeof b.source === "string" ? b.source.trim().toLowerCase() : b.source;
 
-  if (b.source === "sms") {
+  if (source === "sms") {
     if (typeof b.text !== "string" || !b.text.trim()) return { ok: false, error: "Falta 'text' (texto del SMS)" };
     if (b.text.length > MAX_TEXTO) return { ok: false, error: `'text' supera ${MAX_TEXTO} caracteres` };
     const r = parseSms(b.text);
@@ -36,7 +38,7 @@ export function normalizeIngestBody(body: unknown): IngestResult {
     };
   }
 
-  if (b.source === "wallet") {
+  if (source === "wallet") {
     const amount = b.amount;
     if (typeof amount !== "string" && typeof amount !== "number") {
       return { ok: false, error: "Falta 'amount' (número o texto)" };

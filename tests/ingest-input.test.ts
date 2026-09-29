@@ -26,6 +26,15 @@ test("sms delega en el parser", () => {
   assert.equal(r.data.revisado, true);
 });
 
+test("source con mayúscula o espacios (teclado del iPhone)", () => {
+  const w = normalizeIngestBody({ source: "Wallet ", amount: "5,00", merchant: "Bar" });
+  assert.ok(w.ok);
+  assert.equal(w.data.origen, "wallet");
+  const s = normalizeIngestBody({ source: "SMS", text: "ING: Has pagado 8,90 € en SPOTIFY con tu tarjeta" });
+  assert.ok(s.ok);
+  assert.equal(s.data.origen, "sms");
+});
+
 test("cuerpos inválidos → error", () => {
   assert.equal(normalizeIngestBody(null).ok, false);
   assert.equal(normalizeIngestBody({ source: "otro" }).ok, false);
