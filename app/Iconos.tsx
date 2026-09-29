@@ -1,13 +1,9 @@
 import { estiloCategoria } from "@/lib/categorias-ui";
 
 export function IconoCategoria({ nombre, tamaño = 38 }: { nombre: string | null | undefined; tamaño?: number }) {
-  const { emoji, color } = estiloCategoria(nombre);
+  const { emoji } = estiloCategoria(nombre);
   return (
-    <span
-      className="icono-cat"
-      aria-hidden
-      style={{ width: tamaño, height: tamaño, fontSize: tamaño * 0.5, background: `${color}26`, color }}
-    >
+    <span className="icono-cat" aria-hidden style={{ width: tamaño, height: tamaño, fontSize: tamaño * 0.5 }}>
       {emoji}
     </span>
   );

@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { RegistrarSW } from "./RegistrarSW";
 import "./globals.css";
+import { Schibsted_Grotesk } from "next/font/google";
+
+const fuente = Schibsted_Grotesk({ subsets: ["latin"], variable: "--fuente", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Cuadra",
@@ -18,12 +21,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0f766e",
+  themeColor: "#fbfcfd",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" className={fuente.variable}>
       <body>
         {children}
         <RegistrarSW />

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { formatearImporte } from "@/lib/dates";
-import { estiloCategoria } from "@/lib/categorias-ui";
 import type { LineaDesglose } from "@/lib/resumen";
 import { IconoCategoria } from "./Iconos";
 
@@ -16,7 +15,6 @@ export function DesgloseCategorias({ lineas, claveMes, seleccionada }: Props) {
         const clave = l.id ?? "sin";
         const activa = seleccionada === clave;
         const href = activa ? `/?mes=${claveMes}` : `/?mes=${claveMes}&cat=${clave}`;
-        const { color } = estiloCategoria(l.id ? l.nombre : null);
         return (
           <Link
             key={clave}
@@ -32,7 +30,7 @@ export function DesgloseCategorias({ lineas, claveMes, seleccionada }: Props) {
                 <span className="desglose-importe">{formatearImporte(l.total)}</span>
               </span>
               <span className="barra" aria-hidden>
-                <span style={{ width: `${Math.max(l.pct, 2)}%`, background: color }} />
+                <span style={{ width: `${Math.max(l.pct, 2)}%` }} />
               </span>
             </span>
             <span className="desglose-pct">{l.pct}%</span>

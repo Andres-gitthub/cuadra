@@ -43,9 +43,8 @@ test("agruparPorDia mantiene el orden y suma cada día", () => {
 });
 
 test("estiloCategoria: emoji conocido, inicial si es nueva, interrogación si no hay", () => {
-  assert.equal(estiloCategoria("Supermercado").emoji, "🛒");
-  assert.equal(estiloCategoria("supermercado").emoji, "🛒");
-  assert.equal(estiloCategoria("Mascotas").emoji, "M");
-  assert.equal(estiloCategoria(null).emoji, "?");
-  assert.match(estiloCategoria("Ocio").color, /^#[0-9a-f]{6}$/i);
+  assert.deepEqual(estiloCategoria("Supermercado"), { emoji: "🛒" });
+  assert.deepEqual(estiloCategoria("supermercado"), { emoji: "🛒" });
+  assert.deepEqual(estiloCategoria("Mascotas"), { emoji: "M" });
+  assert.deepEqual(estiloCategoria(null), { emoji: "?" });
 });
