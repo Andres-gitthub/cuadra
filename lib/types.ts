@@ -1,5 +1,7 @@
 export type Categoria = { id: string; nombre: string };
 
+export type TipoMovimiento = "gasto" | "reembolso";
+
 export type Movimiento = {
   id: string;
   fecha: string;
@@ -10,10 +12,11 @@ export type Movimiento = {
   origen: "manual" | "wallet" | "sms";
   texto_original: string | null;
   revisado: boolean;
+  tipo: TipoMovimiento;
   categories: { nombre: string } | null;
 };
 
 export const COLUMNAS_MOVIMIENTO =
-  "id, fecha, importe, moneda, comercio, categoria_id, origen, texto_original, revisado, categories(nombre)";
+  "id, fecha, importe, moneda, comercio, categoria_id, origen, texto_original, revisado, tipo, categories(nombre)";
 
 export type EstadoFormulario = { error: string | null };
