@@ -4,11 +4,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient, requireUser } from "@/lib/supabase/server";
-import { parseAmount } from "@/lib/amount";
-import { limpiarComercio } from "@/lib/sms-parser";
 import { categorize } from "@/lib/categorize";
-import { horaLocalAUtc } from "@/lib/dates";
 import { rutaSegura } from "@/lib/rutas";
+import { leerFormularioMovimiento } from "@/lib/formulario";
 import type { EstadoFormulario } from "@/lib/types";
 
 // ---------- Login (magic link + código de 6 dígitos) ----------
@@ -74,20 +72,17 @@ export async function guardarMovimientoManual(
 
   const id = String(formData.get("id") ?? "");
   const volver = rutaSegura(formData.get("volver"));
-  const importe = parseAmount(String(formData.get("importe") ?? ""));
-  const comercio = limpiarComercio(String(formData.get("comercio") ?? ""));
-  const fecha = horaLocalAUtc(String(formData.get("fecha") ?? ""));
-  let categoria_id: string | null = String(formData.get("categoria_id") ?? "") || null;
-
-  if (importe === null) return { error: "Importe no válido (ej.: 12,50)" };
-  if (!fecha) return { error: "Fecha no válida" };
+  const leido = leerFormularioMovimiento(formData);
+  if (!leido.ok) return { error: leido.error };
+  const { tipo, importe, comercio, fecha } = leido.datos;
+  let categoria_id = leido.datos.categoria;
 
   if (categoria_id === "auto") {
     const { data: cats } = await supabase.from("categories").select("id, palabras_clave");
     categoria_id = categorize(comercio, cats ?? []);
   }
 
-  const campos = { importe, comercio, fecha: fecha.toISOString(), categoria_id };
+  const campos = { tipo, importe, comercio, fecha: fecha.toISOString(), categoria_id };
 
   if (id) {
     const revisado = formData.get("revisado") === "on";
