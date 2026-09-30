@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, requireUser } from "@/lib/supabase/server";
 import { categorize } from "@/lib/categorize";
 import { rutaSegura } from "@/lib/rutas";
-import { leerFormularioMovimiento } from "@/lib/formulario";
+import { leerFormularioMovimiento, valoresEnviados } from "@/lib/formulario";
 import type { EstadoFormulario } from "@/lib/types";
 
 // ---------- Login (magic link + código de 6 dígitos) ----------
@@ -72,8 +72,11 @@ export async function guardarMovimientoManual(
 
   const id = String(formData.get("id") ?? "");
   const volver = rutaSegura(formData.get("volver"));
+  // Tras un error se devuelve lo enviado: React reinicia el formulario y si no se perdería (p. ej. el tipo).
+  const fallo = (error: string): EstadoFormulario => ({ error, valores: valoresEnviados(formData), intento: Date.now() });
+
   const leido = leerFormularioMovimiento(formData);
-  if (!leido.ok) return { error: leido.error };
+  if (!leido.ok) return fallo(leido.error);
   const { tipo, importe, comercio, fecha } = leido.datos;
   let categoria_id = leido.datos.categoria;
 
@@ -87,12 +90,12 @@ export async function guardarMovimientoManual(
   if (id) {
     const revisado = formData.get("revisado") === "on";
     const { error } = await supabase.from("transactions").update({ ...campos, revisado }).eq("id", id);
-    if (error) return { error: `No se pudo guardar: ${error.message}` };
+    if (error) return fallo(`No se pudo guardar: ${error.message}`);
   } else {
     const { error } = await supabase
       .from("transactions")
       .insert({ ...campos, moneda: "EUR", origen: "manual", revisado: true });
-    if (error) return { error: `No se pudo guardar: ${error.message}` };
+    if (error) return fallo(`No se pudo guardar: ${error.message}`);
   }
 
   revalidatePath("/");

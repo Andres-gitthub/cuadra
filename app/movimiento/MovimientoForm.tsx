@@ -26,6 +26,13 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
     error: null,
   });
   const editando = Boolean(inicial.id);
+  // Tras un error se muestra lo que se envió, no los valores iniciales (React reinicia el formulario).
+  const v = estado.valores;
+  const tipo = (v?.tipo ?? inicial.tipo) === "reembolso" ? "reembolso" : "gasto";
+  const importe = v?.importe ?? inicial.importe;
+  const comercio = v?.comercio ?? inicial.comercio;
+  const categoriaId = v?.categoria_id ?? inicial.categoria_id;
+  const fecha = v?.fecha ?? inicial.fecha;
 
   const opciones = [
     { valor: "auto", texto: "Automática", emoji: "✨" },
@@ -34,18 +41,18 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
   ];
 
   return (
-    <form action={accion} className="form-rapido">
+    <form key={estado.intento ?? 0} action={accion} className="form-rapido">
       {inicial.id && <input type="hidden" name="id" value={inicial.id} />}
       <input type="hidden" name="volver" value={volver} />
 
       <fieldset className="selector-tipo">
         <legend className="sr-only">Tipo de movimiento</legend>
         <label>
-          <input type="radio" name="tipo" value="gasto" defaultChecked={inicial.tipo !== "reembolso"} />
+          <input type="radio" name="tipo" value="gasto" defaultChecked={tipo === "gasto"} />
           <span>Gasto</span>
         </label>
         <label>
-          <input type="radio" name="tipo" value="reembolso" defaultChecked={inicial.tipo === "reembolso"} />
+          <input type="radio" name="tipo" value="reembolso" defaultChecked={tipo === "reembolso"} />
           <span>Me devuelven</span>
         </label>
       </fieldset>
@@ -56,8 +63,8 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
           name="importe"
           inputMode="decimal"
           placeholder="0,00"
-          defaultValue={inicial.importe}
-          autoFocus={!editando || !inicial.importe}
+          defaultValue={importe}
+          autoFocus={!editando || !importe}
           autoComplete="off"
           required
         />
@@ -70,14 +77,14 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
             <span className="solo-gasto">Comercio</span>
             <span className="solo-reembolso">Concepto</span>
           </span>
-          <input name="comercio" placeholder="Mercadona, Bizum de Ana…" defaultValue={inicial.comercio} autoComplete="off" />
+          <input name="comercio" placeholder="Mercadona, Bizum de Ana…" defaultValue={comercio} autoComplete="off" />
         </label>
         <details className="campo campo-fecha">
           <summary>
             <span>Fecha</span>
             <span className="valor">{etiquetaFecha} · cambiar</span>
           </summary>
-          <input name="fecha" type="datetime-local" defaultValue={inicial.fecha} required />
+          <input name="fecha" type="datetime-local" defaultValue={fecha} required />
         </details>
         {editando && (
           <label className="campo interruptor">
@@ -91,7 +98,7 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
         <legend>Categoría</legend>
         {opciones.map((o) => (
           <label key={o.valor || "sin"} className={`chip${o.valor === "auto" ? " solo-gasto" : ""}`}>
-            <input type="radio" name="categoria_id" value={o.valor} defaultChecked={o.valor === inicial.categoria_id} />
+            <input type="radio" name="categoria_id" value={o.valor} defaultChecked={o.valor === categoriaId} />
             <span>
               {o.emoji} {o.texto}
             </span>

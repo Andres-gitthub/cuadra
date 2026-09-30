@@ -80,7 +80,8 @@ Regla única: **una devolución cuenta con signo negativo**. Un movimiento sin `
 - Devolución en un mes sin gastos de esa categoría: la categoría sale con neto negativo, al final y sin barra.
 - Mes solo con devoluciones: total negativo, sin previsión y sin comercios en "Dónde más gastas".
 - `tipo` con un valor desconocido en el formulario: se rechaza con "Elige si es un gasto o una devolución".
-- Movimientos antiguos sin `tipo` en memoria (o si falta la columna): se tratan como gasto.
+- Movimientos sin `tipo` en memoria (por ejemplo, en los tests): se tratan como gasto.
+- **Si falta la columna en la base de datos, las páginas fallan**: listas vacías con error y 404 en cada movimiento. Por eso la migración `0002` es un requisito obligatorio antes de desplegar, y hay que comprobar que la columna existe. El orden contrario sí es seguro: con la migración aplicada, el código antiguo sigue funcionando, porque los nuevos movimientos reciben `gasto` por defecto.
 
 ## Pruebas
 - Tests unitarios:

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { leerFormularioMovimiento } from "../lib/formulario.ts";
+import { leerFormularioMovimiento, valoresEnviados } from "../lib/formulario.ts";
 
 function fd(campos: Record<string, string>): FormData {
   const f = new FormData();
@@ -48,4 +48,17 @@ test("importe y fecha inválidos", () => {
     error: "Importe no válido (ej.: 12,50)",
   });
   assert.deepEqual(leerFormularioMovimiento(fd({ ...base, fecha: "" })), { ok: false, error: "Fecha no válida" });
+});
+
+test("valoresEnviados conserva lo escrito para volver a mostrarlo tras un error", () => {
+  // React reinicia el formulario al enviarlo: sin esto, un Bizum con el importe mal escrito
+  // volvía a aparecer como "Gasto" y podía acabar guardado así.
+  assert.deepEqual(valoresEnviados(fd({ ...base, importe: "45,5,0", tipo: "reembolso" })), {
+    tipo: "reembolso",
+    importe: "45,5,0",
+    comercio: "Bizum de Ana",
+    categoria_id: "r",
+    fecha: "2026-09-28T13:00",
+  });
+  assert.equal(valoresEnviados(fd(base)).tipo, "gasto");
 });

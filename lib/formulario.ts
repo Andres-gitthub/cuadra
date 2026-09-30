@@ -32,3 +32,23 @@ export function leerFormularioMovimiento(fd: FormData): { ok: true; datos: Datos
     datos: { tipo: tipoCrudo, importe, comercio: limpiarComercio(String(fd.get("comercio") ?? "")), fecha, categoria },
   };
 }
+
+export type ValoresFormulario = { tipo: string; importe: string; comercio: string; categoria_id: string; fecha: string };
+
+/**
+ * Lo que el usuario envió, tal cual, para volver a mostrarlo si hay un error: React reinicia el
+ * formulario al enviarlo, y sin esto el selector volvería a "Gasto" sin avisar.
+ */
+export function valoresEnviados(fd: FormData): ValoresFormulario {
+  const texto = (k: string) => {
+    const v = fd.get(k);
+    return typeof v === "string" ? v : "";
+  };
+  return {
+    tipo: texto("tipo") || "gasto",
+    importe: texto("importe"),
+    comercio: texto("comercio"),
+    categoria_id: texto("categoria_id"),
+    fecha: texto("fecha"),
+  };
+}
