@@ -77,3 +77,28 @@ test("comparativaCategorias: diferencias con el mes anterior, por magnitud", () 
   ]);
   assert.deepEqual(comparativaCategorias([], []), []);
 });
+
+test("topComercios ignora las devoluciones", () => {
+  const movs = [
+    { comercio: "Lidl", importe: 20, tipo: "gasto" },
+    { comercio: "Bizum de Ana", importe: 45, tipo: "reembolso" },
+  ];
+  assert.deepEqual(topComercios(movs), [{ nombre: "Lidl", compras: 1, total: 20 }]);
+});
+
+test("ritmo con total neto negativo: sin previsión", () => {
+  const r = ritmoDelMes(-30, { y: 2026, m: 9 }, AHORA);
+  assert.equal(r.prevision, null);
+});
+
+test("comparativa usa netos", () => {
+  const r = { nombre: "Restaurantes" };
+  const actual = [
+    { importe: 60, categoria_id: "r", categories: r, tipo: "gasto" },
+    { importe: 45, categoria_id: "r", categories: r, tipo: "reembolso" },
+  ];
+  const anterior = [{ importe: 30, categoria_id: "r", categories: r }];
+  assert.deepEqual(comparativaCategorias(actual, anterior), [
+    { id: "r", nombre: "Restaurantes", actual: 15, anterior: 30, diferencia: -15 },
+  ]);
+});

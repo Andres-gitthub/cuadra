@@ -23,11 +23,14 @@ export type LineaComercio = { nombre: string; compras: number; total: number };
 
 const normalizar = (s: string) => s.trim().replace(/\s+/g, " ");
 
-/** Comercios con más gasto. Agrupa sin distinguir mayúsculas/espacios y muestra el nombre más repetido. */
-export function topComercios(movs: { comercio: string | null; importe: number | null }[], n = 8): LineaComercio[] {
+/** Comercios con más gasto (sin devoluciones). Agrupa sin distinguir mayúsculas/espacios y muestra el nombre más repetido. */
+export function topComercios(
+  movs: { comercio: string | null; importe: number | null; tipo?: string | null }[],
+  n = 8,
+): LineaComercio[] {
   const grupos = new Map<string, { nombres: Map<string, number>; compras: number; total: number }>();
   for (const m of movs) {
-    if (m.importe === null || !m.comercio || !normalizar(m.comercio)) continue;
+    if (m.importe === null || m.tipo === "reembolso" || !m.comercio || !normalizar(m.comercio)) continue;
     const nombre = normalizar(m.comercio);
     const clave = nombre.toLowerCase();
     const g = grupos.get(clave) ?? { nombres: new Map(), compras: 0, total: 0 };

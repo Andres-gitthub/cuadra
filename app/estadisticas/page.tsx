@@ -43,7 +43,7 @@ export default async function EstadisticasPage({ searchParams }: { searchParams:
   const ritmo = ritmoDelMes(total, mes, ahora);
   const comercios = topComercios(movimientos);
   const comparativa = comparativaCategorias(movimientos, previos);
-  const sinGastos = total === 0;
+  const sinGastos = total <= 0;
 
   return (
     <>
@@ -56,7 +56,11 @@ export default async function EstadisticasPage({ searchParams }: { searchParams:
         {error && <p className="error">No se pudieron cargar los datos: {error.message}</p>}
 
         {sinGastos ? (
-          <p className="vacio">Aún no hay gastos en {nombreMes(mes, false)}. Las estadísticas aparecerán con el primero.</p>
+          <p className="vacio">
+            {total < 0
+              ? `En ${nombreMes(mes, false)} te han devuelto más de lo que has gastado.`
+              : `Aún no hay gastos en ${nombreMes(mes, false)}. El ritmo y los comercios aparecerán con el primero.`}
+          </p>
         ) : (
           <>
             <section className="bloque" aria-labelledby="ritmo">
