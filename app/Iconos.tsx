@@ -13,6 +13,7 @@ const ORIGEN = {
   wallet: { titulo: "Apple Pay", d: "M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm4 17h2" },
   sms: { titulo: "SMS del banco", d: "M4 5h16v11H9l-5 4V5Z" },
   manual: { titulo: "Añadido a mano", d: "M4 20h4L19 9l-4-4L4 16v4Zm10-14 4 4" },
+  devolucion: { titulo: "Devolución", d: "M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" },
 } as const;
 
 export function IconoOrigen({ origen }: { origen: keyof typeof ORIGEN }) {

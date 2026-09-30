@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { guardarMovimientoManual } from "@/app/actions";
 import { estiloCategoria } from "@/lib/categorias-ui";
-import type { Categoria, EstadoFormulario } from "@/lib/types";
+import type { Categoria, EstadoFormulario, TipoMovimiento } from "@/lib/types";
 
 type Props = {
   categorias: Categoria[];
@@ -12,6 +12,7 @@ type Props = {
   etiquetaFecha: string;
   inicial: {
     id?: string;
+    tipo?: TipoMovimiento;
     importe: string;
     comercio: string;
     categoria_id: string; // "auto", "" (sin categoría) o un id
@@ -37,6 +38,18 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
       {inicial.id && <input type="hidden" name="id" value={inicial.id} />}
       <input type="hidden" name="volver" value={volver} />
 
+      <fieldset className="selector-tipo">
+        <legend className="sr-only">Tipo de movimiento</legend>
+        <label>
+          <input type="radio" name="tipo" value="gasto" defaultChecked={inicial.tipo !== "reembolso"} />
+          <span>Gasto</span>
+        </label>
+        <label>
+          <input type="radio" name="tipo" value="reembolso" defaultChecked={inicial.tipo === "reembolso"} />
+          <span>Me devuelven</span>
+        </label>
+      </fieldset>
+
       <label className="importe-grande">
         <span className="sr-only">Importe en euros</span>
         <input
@@ -53,8 +66,11 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
 
       <div className="tarjeta campos">
         <label className="campo">
-          <span>Comercio</span>
-          <input name="comercio" placeholder="¿Dónde?" defaultValue={inicial.comercio} autoComplete="off" />
+          <span>
+            <span className="solo-gasto">Comercio</span>
+            <span className="solo-reembolso">Concepto</span>
+          </span>
+          <input name="comercio" placeholder="Mercadona, Bizum de Ana…" defaultValue={inicial.comercio} autoComplete="off" />
         </label>
         <details className="campo campo-fecha">
           <summary>
@@ -74,7 +90,7 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
       <fieldset className="chips">
         <legend>Categoría</legend>
         {opciones.map((o) => (
-          <label key={o.valor || "sin"} className="chip">
+          <label key={o.valor || "sin"} className={`chip${o.valor === "auto" ? " solo-gasto" : ""}`}>
             <input type="radio" name="categoria_id" value={o.valor} defaultChecked={o.valor === inicial.categoria_id} />
             <span>
               {o.emoji} {o.texto}

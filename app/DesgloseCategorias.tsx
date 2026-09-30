@@ -27,13 +27,15 @@ export function DesgloseCategorias({ lineas, claveMes, seleccionada }: Props) {
             <span className="desglose-info">
               <span className="desglose-fila">
                 <span className="desglose-nombre">{l.nombre}</span>
-                <span className="desglose-importe">{formatearImporte(l.total)}</span>
+                <span className={`desglose-importe${l.total <= 0 ? " negativo" : ""}`}>{formatearImporte(l.total)}</span>
               </span>
-              <span className="barra" aria-hidden>
-                <span style={{ width: `${Math.max(l.pct, 2)}%` }} />
-              </span>
+              {l.total > 0 && (
+                <span className="barra" aria-hidden>
+                  <span style={{ width: `${Math.max(l.pct, 2)}%` }} />
+                </span>
+              )}
             </span>
-            <span className="desglose-pct">{l.pct}%</span>
+            <span className="desglose-pct">{l.total > 0 ? `${l.pct}%` : ""}</span>
           </Link>
         );
       })}

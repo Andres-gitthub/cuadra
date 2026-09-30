@@ -15,7 +15,7 @@ export function MovimientosLista({ movimientos, volver, vacio = "No hay movimien
         <section key={dia.clave} aria-label={dia.etiqueta}>
           <h3 className="cabecera-dia">
             <span>{dia.etiqueta}</span>
-            <span>{dia.total > 0 ? formatearImporte(dia.total) : ""}</span>
+            <span>{dia.total !== 0 ? formatearImporte(dia.total) : ""}</span>
           </h3>
           <ul className="tarjeta lista">
             {dia.movimientos.map((m) => (
@@ -27,6 +27,7 @@ export function MovimientosLista({ movimientos, volver, vacio = "No hay movimien
                 importe={m.importe}
                 moneda={m.moneda}
                 origen={m.origen}
+                tipo={m.tipo}
                 revisado={m.revisado}
                 hora={formatearHora(m.fecha)}
                 volver={volver}

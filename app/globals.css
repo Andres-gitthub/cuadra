@@ -928,3 +928,60 @@ button {
 .diferencia.baja {
   color: var(--baja);
 }
+
+/* ---------- Devoluciones ---------- */
+
+.selector-tipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  border: none;
+  border-radius: 12px;
+  background: var(--relleno);
+}
+
+.selector-tipo input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.selector-tipo span {
+  display: block;
+  padding: 10px;
+  border-radius: 9px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--suave);
+  cursor: pointer;
+}
+
+.selector-tipo input:checked + span {
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+
+.selector-tipo input:focus-visible + span {
+  outline: 2px solid var(--primario);
+  outline-offset: 2px;
+}
+
+.solo-reembolso {
+  display: none;
+}
+
+.form-rapido:has(input[name="tipo"][value="reembolso"]:checked) .solo-gasto {
+  display: none;
+}
+
+.form-rapido:has(input[name="tipo"][value="reembolso"]:checked) .solo-reembolso {
+  display: inline;
+}
+
+.fila-importe.devolucion,
+.desglose-importe.negativo {
+  color: var(--baja);
+}

@@ -16,6 +16,7 @@ type Props = {
   moneda: string;
   origen: "manual" | "wallet" | "sms";
   revisado: boolean;
+  tipo: "gasto" | "reembolso";
   hora: string;
   volver: string;
 };
@@ -28,6 +29,7 @@ export function FilaMovimiento(p: Props) {
   const direccion = useRef<"h" | "v" | null>(null);
   const seHaMovido = useRef(false);
   const abierta = desplazamiento <= -ANCHO_BORRAR / 2;
+  const devolucion = p.tipo === "reembolso";
 
   function alEmpezar(e: React.TouchEvent) {
     const t = e.touches[0];
@@ -87,15 +89,17 @@ export function FilaMovimiento(p: Props) {
         <span className="fila-info">
           <span className="fila-comercio">
             {!p.revisado && <span className="punto" aria-label="Pendiente de revisar" />}
-            {p.comercio ?? <em>Sin comercio</em>}
+            {p.comercio ?? <em>{devolucion ? "Devolución" : "Sin comercio"}</em>}
           </span>
           <span className="fila-detalle">
-            <IconoOrigen origen={p.origen} />
+            <IconoOrigen origen={devolucion ? "devolucion" : p.origen} />
             {p.hora} · {p.categoria ?? "Sin categoría"}
           </span>
         </span>
-        <span className={`fila-importe${p.importe === null ? " sin-importe" : ""}`}>
-          {p.importe === null ? "Sin importe" : formatearImporte(p.importe, p.moneda)}
+        <span className={`fila-importe${p.importe === null ? " sin-importe" : ""}${devolucion ? " devolucion" : ""}`}>
+          {p.importe === null
+            ? "Sin importe"
+            : `${devolucion ? "+" : ""}${formatearImporte(p.importe, p.moneda)}`}
         </span>
       </Link>
     </li>

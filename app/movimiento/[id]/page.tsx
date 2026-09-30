@@ -48,6 +48,7 @@ export default async function EditarPage({
         etiquetaFecha={formatearFecha(m.fecha)}
         inicial={{
           id: m.id,
+          tipo: m.tipo,
           importe: m.importe === null ? "" : String(m.importe).replace(".", ","),
           comercio: m.comercio ?? "",
           categoria_id: m.categoria_id ?? "",
