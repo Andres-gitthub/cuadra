@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { claveMes, desplazarMes, formatearImporte, mesActual, nombreMes, parseMes, rangoMes } from "@/lib/dates";
-import { desglosePorCategoria, totalImportes } from "@/lib/resumen";
+import { desglosePorCategoria, lineaResumen, totalImportes } from "@/lib/resumen";
 import { COLUMNAS_MOVIMIENTO, type Movimiento } from "@/lib/types";
 import { SelectorMes } from "./SelectorMes";
 import { DesgloseCategorias } from "./DesgloseCategorias";
@@ -31,7 +31,7 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
       .limit(2000),
     supabase
       .from("transactions")
-      .select("importe")
+      .select("importe, tipo")
       .gte("fecha", rangoAnterior.desde.toISOString())
       .lt("fecha", rangoAnterior.hasta.toISOString())
       .not("importe", "is", null),
@@ -56,7 +56,7 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
         <CabeceraLibreta>
           <SelectorMes mes={mes} esActual={esActual} />
           <p className="total">{formatearImporte(total)}</p>
-          <p className="subtitulo">{lineaResumen(movimientos.length, total, totalAnterior, nombreMes(anterior, false))}</p>
+          <p className="subtitulo">{lineaResumen(movimientos, total, totalAnterior, nombreMes(anterior, false))}</p>
         </CabeceraLibreta>
 
         {error && <p className="error">Error cargando datos: {error.message}</p>}
@@ -75,11 +75,3 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
   );
 }
 
-function lineaResumen(n: number, total: number, totalAnterior: number, mesAnterior: string): string {
-  const cuantos = `${n} ${n === 1 ? "gasto" : "gastos"}`;
-  if (totalAnterior <= 0) return cuantos;
-  const diferencia = Math.round((total - totalAnterior) * 100) / 100;
-  if (diferencia === 0) return `${cuantos}, igual que en ${mesAnterior}`;
-  const cuanto = formatearImporte(Math.abs(diferencia));
-  return `${cuantos}, ${cuanto} ${diferencia < 0 ? "menos" : "más"} que en ${mesAnterior}`;
-}
