@@ -17,6 +17,8 @@ type Props = {
   origen: "manual" | "wallet" | "sms";
   revisado: boolean;
   tipo: "gasto" | "reembolso";
+  /** Personas entre las que se repartió, si se repartió. */
+  personas?: number;
   hora: string;
   volver: string;
 };
@@ -94,6 +96,7 @@ export function FilaMovimiento(p: Props) {
           <span className="fila-detalle">
             <IconoOrigen origen={devolucion ? "devolucion" : p.origen} />
             {p.hora} · {p.categoria ?? "Sin categoría"}
+            {p.personas && p.personas > 1 ? ` · entre ${p.personas}` : ""}
           </span>
         </span>
         <span className={`fila-importe${p.importe === null ? " sin-importe" : ""}${devolucion ? " devolucion" : ""}`}>

@@ -4,6 +4,9 @@ import { useActionState, useEffect, useState } from "react";
 import { guardarMovimientoManual } from "@/app/actions";
 import { estiloCategoria } from "@/lib/categorias-ui";
 import { claveDeComercio } from "@/lib/aprender";
+import { parseAmount } from "@/lib/amount";
+import { repartir } from "@/lib/reparto";
+import { formatearImporte } from "@/lib/dates";
 import type { Categoria, EstadoFormulario, TipoMovimiento } from "@/lib/types";
 
 type Props = {
@@ -19,6 +22,8 @@ type Props = {
     categoria_id: string; // "auto", "" (sin categoría) o un id
     fecha: string; // "YYYY-MM-DDTHH:mm" en hora de Madrid
     revisado?: boolean;
+    /** Personas entre las que se reparte (1 = sin repartir). Con reparto, importe es el total pagado. */
+    personas?: number;
   };
 };
 
@@ -39,6 +44,18 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
   const [comercioEscrito, setComercioEscrito] = useState(comercio);
   useEffect(() => setComercioEscrito(comercio), [comercio, estado.intento]);
   const claveRecordar = claveDeComercio(comercioEscrito);
+
+  // Vista previa de "Repartir entre": el importe escrito es el total, y se muestra tu parte.
+  const personas = v?.personas ?? String(inicial.personas ?? 1);
+  const [importeEscrito, setImporteEscrito] = useState(importe);
+  const [personasElegidas, setPersonasElegidas] = useState(personas);
+  useEffect(() => {
+    setImporteEscrito(importe);
+    setPersonasElegidas(personas);
+  }, [importe, personas, estado.intento]);
+  const total = parseAmount(importeEscrito);
+  const n = Number(personasElegidas);
+  const tuParte = total !== null && n > 1 ? repartir(total, n) : null;
 
   const opciones = [
     { valor: "auto", texto: "Automática", emoji: "✨" },
@@ -70,12 +87,18 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
           inputMode="decimal"
           placeholder="0,00"
           defaultValue={importe}
+          onChange={(e) => setImporteEscrito(e.target.value)}
           autoFocus={!editando || !importe}
           autoComplete="off"
           required
         />
         <span aria-hidden>€</span>
       </label>
+      {tuParte !== null && (
+        <p className="tu-parte solo-gasto" aria-live="polite">
+          Tu parte: <strong>{formatearImporte(tuParte)}</strong> ({formatearImporte(total!)} entre {n})
+        </p>
+      )}
 
       <div className="tarjeta campos">
         <label className="campo">
@@ -90,6 +113,17 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
             onChange={(e) => setComercioEscrito(e.target.value)}
             autoComplete="off"
           />
+        </label>
+        <label className="campo solo-gasto">
+          <span>Repartir entre</span>
+          <select name="personas" defaultValue={personas} onChange={(e) => setPersonasElegidas(e.target.value)}>
+            <option value="1">No repartir</option>
+            {Array.from({ length: 11 }, (_, i) => i + 2).map((p) => (
+              <option key={p} value={p}>
+                {p} personas
+              </option>
+            ))}
+          </select>
         </label>
         <details className="campo campo-fecha">
           <summary>

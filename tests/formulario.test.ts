@@ -60,6 +60,7 @@ test("valoresEnviados conserva lo escrito para volver a mostrarlo tras un error"
     categoria_id: "r",
     fecha: "2026-09-28T13:00",
     recordar: false,
+    personas: "1",
   });
   assert.equal(valoresEnviados(fd(base)).tipo, "gasto");
   assert.equal(valoresEnviados(fd({ ...base, recordar: "on" })).recordar, true);
@@ -91,4 +92,33 @@ test("recordar con un comercio sin palabra útil se rechaza", () => {
 test("una devolución nunca aprende reglas", () => {
   const r = leerFormularioMovimiento(fd({ ...base, tipo: "reembolso", recordar: "on" }));
   assert.ok(r.ok && r.datos.aprender === null);
+});
+
+test("repartir: guarda tu parte y el reparto (total y personas)", () => {
+  const r = leerFormularioMovimiento(fd({ ...base, importe: "60", tipo: "gasto", personas: "4" }));
+  assert.ok(r.ok);
+  assert.equal(r.datos.importe, 15);
+  assert.deepEqual(r.datos.reparto, { total: 60, personas: 4 });
+});
+
+test("sin repartir (1 o ausente): importe tal cual y sin reparto", () => {
+  for (const personas of ["1", undefined]) {
+    const campos = personas ? { ...base, personas } : base;
+    const r = leerFormularioMovimiento(fd(campos));
+    assert.ok(r.ok && r.datos.importe === 45 && r.datos.reparto === null);
+  }
+});
+
+test("personas fuera de rango o no numérico se rechaza", () => {
+  for (const personas of ["0", "51", "2.5", "muchos"]) {
+    assert.deepEqual(leerFormularioMovimiento(fd({ ...base, personas })), {
+      ok: false,
+      error: "Elige entre cuántas personas repartir (de 1 a 50)",
+    });
+  }
+});
+
+test("una devolución no se reparte", () => {
+  const r = leerFormularioMovimiento(fd({ ...base, tipo: "reembolso", personas: "3" }));
+  assert.ok(r.ok && r.datos.importe === 45 && r.datos.reparto === null);
 });

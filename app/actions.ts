@@ -8,6 +8,7 @@ import { categorize } from "@/lib/categorize";
 import { rutaSegura } from "@/lib/rutas";
 import { leerFormularioMovimiento, valoresEnviados } from "@/lib/formulario";
 import { aplicarRegla, gastosQueCoinciden } from "@/lib/aprender";
+import { combinarNota } from "@/lib/reparto";
 import type { EstadoFormulario } from "@/lib/types";
 
 // ---------- Login (magic link + código de 6 dígitos) ----------
@@ -78,7 +79,7 @@ export async function guardarMovimientoManual(
 
   const leido = leerFormularioMovimiento(formData);
   if (!leido.ok) return fallo(leido.error);
-  const { tipo, importe, comercio, fecha, aprender } = leido.datos;
+  const { tipo, importe, comercio, fecha, aprender, reparto } = leido.datos;
   let categoria_id = leido.datos.categoria;
 
   // "Recordar esta categoría": se aprende antes de guardar, para que si falla no se guarde
@@ -97,12 +98,16 @@ export async function guardarMovimientoManual(
 
   if (id) {
     const revisado = formData.get("revisado") === "on";
-    const { error } = await supabase.from("transactions").update({ ...campos, revisado }).eq("id", id);
+    // La nota de reparto va en texto_original junto a lo que llegó de Apple Pay o del SMS: hay que leerlo para no perderlo.
+    const { data: actual, error: errorLeer } = await supabase.from("transactions").select("texto_original").eq("id", id).maybeSingle();
+    if (errorLeer) return fallo(`No se pudo guardar: ${errorLeer.message}`);
+    const texto_original = combinarNota(actual?.texto_original, reparto);
+    const { error } = await supabase.from("transactions").update({ ...campos, revisado, texto_original }).eq("id", id);
     if (error) return fallo(`No se pudo guardar: ${error.message}`);
   } else {
     const { error } = await supabase
       .from("transactions")
-      .insert({ ...campos, moneda: "EUR", origen: "manual", revisado: true });
+      .insert({ ...campos, texto_original: combinarNota(null, reparto), moneda: "EUR", origen: "manual", revisado: true });
     if (error) return fallo(`No se pudo guardar: ${error.message}`);
   }
 

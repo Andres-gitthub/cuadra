@@ -1010,3 +1010,31 @@ button {
   font-size: 0.82rem;
   color: var(--suave);
 }
+
+/* ---------- Repartir ---------- */
+
+.tu-parte {
+  margin: -10px 0 0;
+  text-align: center;
+  color: var(--suave);
+  font-size: 0.95rem;
+}
+
+.tu-parte strong {
+  color: var(--primario);
+  font-variant-numeric: tabular-nums;
+}
+
+.campo select {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  text-align: right;
+  text-align-last: right;
+  font: inherit;
+  font-size: 16px;
+  color: var(--primario);
+  padding: 12px 0;
+  outline-offset: 2px;
+}

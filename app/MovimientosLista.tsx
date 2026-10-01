@@ -1,5 +1,6 @@
 import { formatearHora, formatearImporte } from "@/lib/dates";
 import { agruparPorDia } from "@/lib/resumen";
+import { leerReparto } from "@/lib/reparto";
 import type { Movimiento } from "@/lib/types";
 import { FilaMovimiento } from "./FilaMovimiento";
 
@@ -28,6 +29,7 @@ export function MovimientosLista({ movimientos, volver, vacio = "No hay movimien
                 moneda={m.moneda}
                 origen={m.origen}
                 tipo={m.tipo}
+                personas={leerReparto(m.texto_original)?.personas}
                 revisado={m.revisado}
                 hora={formatearHora(m.fecha)}
                 volver={volver}

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatearFecha, utcAHoraLocal } from "@/lib/dates";
 import { rutaSegura } from "@/lib/rutas";
+import { leerReparto, quitarNotaReparto } from "@/lib/reparto";
 import { COLUMNAS_MOVIMIENTO, type Movimiento } from "@/lib/types";
 import { MovimientoForm } from "../MovimientoForm";
 import { BorrarBoton } from "./BorrarBoton";
@@ -24,6 +25,10 @@ export default async function EditarPage({
   ]);
   if (!data) notFound();
   const m = data as unknown as Movimiento;
+  // Un gasto repartido se edita desde el total pagado y las personas, para no dividirlo dos veces.
+  const reparto = leerReparto(m.texto_original);
+  const textoOriginal = quitarNotaReparto(m.texto_original);
+  const importeInicial = reparto ? reparto.total : m.importe;
 
   return (
     <main className="page">
@@ -35,10 +40,10 @@ export default async function EditarPage({
         <span />
       </nav>
 
-      {m.texto_original && (
+      {textoOriginal && (
         <blockquote className="texto-original">
           <span className="etiqueta">Texto original</span>
-          {m.texto_original}
+          {textoOriginal}
         </blockquote>
       )}
 
@@ -49,7 +54,8 @@ export default async function EditarPage({
         inicial={{
           id: m.id,
           tipo: m.tipo,
-          importe: m.importe === null ? "" : String(m.importe).replace(".", ","),
+          importe: importeInicial === null ? "" : String(importeInicial).replace(".", ","),
+          personas: reparto?.personas ?? 1,
           comercio: m.comercio ?? "",
           categoria_id: m.categoria_id ?? "",
           fecha: utcAHoraLocal(new Date(m.fecha)),
