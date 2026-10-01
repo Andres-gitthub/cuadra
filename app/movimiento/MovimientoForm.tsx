@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { guardarMovimientoManual } from "@/app/actions";
 import { estiloCategoria } from "@/lib/categorias-ui";
+import { claveDeComercio } from "@/lib/aprender";
 import type { Categoria, EstadoFormulario, TipoMovimiento } from "@/lib/types";
 
 type Props = {
@@ -33,6 +34,11 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
   const comercio = v?.comercio ?? inicial.comercio;
   const categoriaId = v?.categoria_id ?? inicial.categoria_id;
   const fecha = v?.fecha ?? inicial.fecha;
+
+  // Palabra que se aprendería con "Recordar", según lo que se va escribiendo en el comercio.
+  const [comercioEscrito, setComercioEscrito] = useState(comercio);
+  useEffect(() => setComercioEscrito(comercio), [comercio, estado.intento]);
+  const claveRecordar = claveDeComercio(comercioEscrito);
 
   const opciones = [
     { valor: "auto", texto: "Automática", emoji: "✨" },
@@ -77,7 +83,13 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
             <span className="solo-gasto">Comercio</span>
             <span className="solo-reembolso">Concepto</span>
           </span>
-          <input name="comercio" placeholder="Mercadona, Bizum de Ana…" defaultValue={comercio} autoComplete="off" />
+          <input
+            name="comercio"
+            placeholder="Mercadona, Bizum de Ana…"
+            defaultValue={comercio}
+            onChange={(e) => setComercioEscrito(e.target.value)}
+            autoComplete="off"
+          />
         </label>
         <details className="campo campo-fecha">
           <summary>
@@ -105,6 +117,23 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
           </label>
         ))}
       </fieldset>
+
+      <label className="recordar solo-gasto">
+        <input type="checkbox" name="recordar" defaultChecked={v?.recordar ?? false} />
+        <span>
+          {claveRecordar ? (
+            <>
+              Recordar esta categoría para «{claveRecordar}»
+              <span className="ayuda">También corrige los gastos anteriores de ese comercio.</span>
+            </>
+          ) : (
+            <>
+              Recordar esta categoría para este comercio
+              <span className="ayuda">Escribe el comercio para ver qué palabra aprenderá.</span>
+            </>
+          )}
+        </span>
+      </label>
 
       {estado.error && <p className="error">{estado.error}</p>}
       <button className="btn btn-grande" disabled={guardando}>

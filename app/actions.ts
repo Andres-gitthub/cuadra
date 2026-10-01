@@ -7,6 +7,7 @@ import { createClient, requireUser } from "@/lib/supabase/server";
 import { categorize } from "@/lib/categorize";
 import { rutaSegura } from "@/lib/rutas";
 import { leerFormularioMovimiento, valoresEnviados } from "@/lib/formulario";
+import { aplicarRegla, gastosQueCoinciden } from "@/lib/aprender";
 import type { EstadoFormulario } from "@/lib/types";
 
 // ---------- Login (magic link + código de 6 dígitos) ----------
@@ -77,8 +78,15 @@ export async function guardarMovimientoManual(
 
   const leido = leerFormularioMovimiento(formData);
   if (!leido.ok) return fallo(leido.error);
-  const { tipo, importe, comercio, fecha } = leido.datos;
+  const { tipo, importe, comercio, fecha, aprender } = leido.datos;
   let categoria_id = leido.datos.categoria;
+
+  // "Recordar esta categoría": se aprende antes de guardar, para que si falla no se guarde
+  // el movimiento y reintentar no lo duplique.
+  if (aprender && categoria_id) {
+    const errorAprender = await aprenderRegla(supabase, aprender, categoria_id);
+    if (errorAprender) return fallo(errorAprender);
+  }
 
   if (categoria_id === "auto") {
     const { data: cats } = await supabase.from("categories").select("id, palabras_clave");
@@ -101,6 +109,31 @@ export async function guardarMovimientoManual(
   revalidatePath("/");
   revalidatePath("/pendientes");
   redirect(volver);
+}
+
+type ClienteSupabase = Awaited<ReturnType<typeof requireUser>>["supabase"];
+
+/** Añade la palabra clave a la categoría (quitándola de las demás) y recoloca los gastos anteriores de ese comercio. */
+async function aprenderRegla(supabase: ClienteSupabase, clave: string, categoriaId: string): Promise<string | null> {
+  const { data: cats, error: errorCats } = await supabase.from("categories").select("id, palabras_clave");
+  if (errorCats) return `No se pudo recordar la categoría: ${errorCats.message}`;
+  for (const cambio of aplicarRegla(cats ?? [], clave, categoriaId)) {
+    const { error } = await supabase.from("categories").update({ palabras_clave: cambio.palabras_clave }).eq("id", cambio.id);
+    if (error) return `No se pudo recordar la categoría: ${error.message}`;
+  }
+
+  const { data: movs, error: errorMovs } = await supabase
+    .from("transactions")
+    .select("id, comercio, tipo, categoria_id")
+    .not("comercio", "is", null)
+    .limit(10000);
+  if (errorMovs) return `No se pudieron corregir los gastos anteriores: ${errorMovs.message}`;
+  const ids = gastosQueCoinciden(movs ?? [], clave, categoriaId);
+  for (let i = 0; i < ids.length; i += 100) {
+    const { error } = await supabase.from("transactions").update({ categoria_id: categoriaId }).in("id", ids.slice(i, i + 100));
+    if (error) return `No se pudieron corregir los gastos anteriores: ${error.message}`;
+  }
+  return null;
 }
 
 export async function borrarMovimiento(formData: FormData) {

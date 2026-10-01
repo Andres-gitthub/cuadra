@@ -59,6 +59,36 @@ test("valoresEnviados conserva lo escrito para volver a mostrarlo tras un error"
     comercio: "Bizum de Ana",
     categoria_id: "r",
     fecha: "2026-09-28T13:00",
+    recordar: false,
   });
   assert.equal(valoresEnviados(fd(base)).tipo, "gasto");
+  assert.equal(valoresEnviados(fd({ ...base, recordar: "on" })).recordar, true);
+});
+
+test("recordar: un gasto con categoría aprende la palabra clave del comercio", () => {
+  const r = leerFormularioMovimiento(fd({ ...base, comercio: "REPSOL ES 1234", tipo: "gasto", recordar: "on" }));
+  assert.ok(r.ok && r.datos.aprender === "repsol es");
+  const sin = leerFormularioMovimiento(fd({ ...base, tipo: "gasto" }));
+  assert.ok(sin.ok && sin.datos.aprender === null);
+});
+
+test("recordar exige una categoría concreta", () => {
+  for (const categoria_id of ["auto", ""]) {
+    assert.deepEqual(leerFormularioMovimiento(fd({ ...base, categoria_id, recordar: "on" })), {
+      ok: false,
+      error: "Elige una categoría para poder recordarla",
+    });
+  }
+});
+
+test("recordar con un comercio sin palabra útil se rechaza", () => {
+  assert.deepEqual(leerFormularioMovimiento(fd({ ...base, comercio: "BP 0042", recordar: "on" })), {
+    ok: false,
+    error: "El comercio necesita al menos 3 letras para poder recordarlo",
+  });
+});
+
+test("una devolución nunca aprende reglas", () => {
+  const r = leerFormularioMovimiento(fd({ ...base, tipo: "reembolso", recordar: "on" }));
+  assert.ok(r.ok && r.datos.aprender === null);
 });

@@ -2,6 +2,7 @@ import { parseAmount } from "./amount.ts";
 import { limpiarComercio } from "./sms-parser.ts";
 import { horaLocalAUtc } from "./dates.ts";
 import type { TipoMovimiento } from "./types.ts";
+import { claveDeComercio } from "./aprender.ts";
 
 export type DatosMovimiento = {
   tipo: TipoMovimiento;
@@ -10,6 +11,8 @@ export type DatosMovimiento = {
   fecha: Date;
   /** "auto" (autocategorizar), el id de una categoría o null (sin categoría). */
   categoria: string | null;
+  /** Palabra clave que hay que aprender para la categoría elegida, o null si no se marcó "Recordar". */
+  aprender: string | null;
 };
 
 /** Valida el formulario de alta/edición. No toca la base de datos. */
@@ -27,13 +30,27 @@ export function leerFormularioMovimiento(fd: FormData): { ok: true; datos: Datos
   // Autocategorizar por el concepto de una devolución ("Bizum de Ana") no tiene sentido.
   if (tipoCrudo === "reembolso" && categoria === "auto") categoria = null;
 
-  return {
-    ok: true,
-    datos: { tipo: tipoCrudo, importe, comercio: limpiarComercio(String(fd.get("comercio") ?? "")), fecha, categoria },
-  };
+  const comercio = limpiarComercio(String(fd.get("comercio") ?? ""));
+
+  // "Recordar esta categoría para este comercio": solo en gastos y con una categoría concreta.
+  let aprender: string | null = null;
+  if (fd.get("recordar") === "on" && tipoCrudo === "gasto") {
+    if (!categoria || categoria === "auto") return { ok: false, error: "Elige una categoría para poder recordarla" };
+    aprender = claveDeComercio(comercio);
+    if (!aprender) return { ok: false, error: "El comercio necesita al menos 3 letras para poder recordarlo" };
+  }
+
+  return { ok: true, datos: { tipo: tipoCrudo, importe, comercio, fecha, categoria, aprender } };
 }
 
-export type ValoresFormulario = { tipo: string; importe: string; comercio: string; categoria_id: string; fecha: string };
+export type ValoresFormulario = {
+  tipo: string;
+  importe: string;
+  comercio: string;
+  categoria_id: string;
+  fecha: string;
+  recordar: boolean;
+};
 
 /**
  * Lo que el usuario envió, tal cual, para volver a mostrarlo si hay un error: React reinicia el
@@ -50,5 +67,6 @@ export function valoresEnviados(fd: FormData): ValoresFormulario {
     comercio: texto("comercio"),
     categoria_id: texto("categoria_id"),
     fecha: texto("fecha"),
+    recordar: fd.get("recordar") === "on",
   };
 }
