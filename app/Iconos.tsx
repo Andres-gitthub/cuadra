@@ -1,10 +1,33 @@
 import { estiloCategoria } from "@/lib/categorias-ui";
 
-export function IconoCategoria({ nombre, tamaño = 38 }: { nombre: string | null | undefined; tamaño?: number }) {
-  const { emoji } = estiloCategoria(nombre);
+/** Icono de línea de 24×24 en el color del texto. */
+export function Trazo({ d, tamaño = 24, grosor = 2 }: { d: string; tamaño?: number; grosor?: number }) {
   return (
-    <span className="icono-cat" aria-hidden style={{ width: tamaño, height: tamaño, fontSize: tamaño * 0.5 }}>
-      {emoji}
+    <svg className="trazo" viewBox="0 0 24 24" width={tamaño} height={tamaño} strokeWidth={grosor} aria-hidden>
+      <path d={d} />
+    </svg>
+  );
+}
+
+/** Cuadro con el icono de la categoría en su color (o su inicial, si es una categoría sin estilo). */
+export function IconoCategoria({ nombre, tamaño = 40 }: { nombre: string | null | undefined; tamaño?: number }) {
+  const { color, icono, inicial } = estiloCategoria(nombre);
+  return (
+    <span className="icono-cat" aria-hidden style={{ width: tamaño, height: tamaño, color, background: `${color}1a` }}>
+      {icono ? <Trazo d={icono} tamaño={Math.round(tamaño / 2)} /> : <span style={{ fontSize: tamaño * 0.45 }}>{inicial}</span>}
+    </span>
+  );
+}
+
+const FLECHAS = { sube: "M12 19V5M6 11l6-6 6 6", baja: "M12 5v14M6 13l6 6 6-6" } as const;
+
+/** Etiqueta con flecha para una diferencia de gasto: gastar más va en rojo, gastar menos en verde. */
+export function Insignia({ diferencia, children }: { diferencia: number; children: React.ReactNode }) {
+  const sentido = diferencia > 0 ? "sube" : diferencia < 0 ? "baja" : null;
+  return (
+    <span className={`insignia${sentido ? ` ${sentido}` : ""}`}>
+      {sentido && <Trazo d={FLECHAS[sentido]} tamaño={14} grosor={2.4} />}
+      {children}
     </span>
   );
 }

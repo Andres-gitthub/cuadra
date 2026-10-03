@@ -70,7 +70,7 @@ export function FilaMovimiento(p: Props) {
   }
 
   return (
-    <li className="fila-deslizable">
+    <li className={`fila-deslizable${desplazamiento < 0 ? " deslizando" : ""}`}>
       <form action={borrarMovimiento} className="accion-borrar">
         <input type="hidden" name="id" value={p.id} />
         <input type="hidden" name="volver" value={p.volver} />

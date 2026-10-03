@@ -1,5 +1,5 @@
 import { claveDia, claveMes, mesActual, type Mes } from "./dates.ts";
-import { desglosePorCategoria } from "./resumen.ts";
+import { desglosePorCategoria, totalImportes } from "./resumen.ts";
 
 const redondear = (n: number) => Math.round(n * 100) / 100;
 
@@ -17,6 +17,21 @@ export function ritmoDelMes(total: number, mes: Mes, ahora = new Date()): Ritmo 
     diasDelMes,
     prevision: esActual && total > 0 ? redondear(media * diasDelMes) : null,
   };
+}
+
+/** Gasto neto de cada día del mes (posición 0 = día 1). Los días que aún no han llegado son null. */
+export function gastoPorDia(
+  movs: { fecha: string; importe: number | null; tipo?: string | null }[],
+  mes: Mes,
+  ahora = new Date(),
+): (number | null)[] {
+  const { diasContados, diasDelMes } = ritmoDelMes(0, mes, ahora);
+  const porDia = new Map<number, typeof movs>();
+  for (const m of movs) {
+    const dia = Number(claveDia(m.fecha).slice(8));
+    porDia.set(dia, [...(porDia.get(dia) ?? []), m]);
+  }
+  return Array.from({ length: diasDelMes }, (_, i) => (i < diasContados ? totalImportes(porDia.get(i + 1) ?? []) : null));
 }
 
 export type LineaComercio = { nombre: string; compras: number; total: number };

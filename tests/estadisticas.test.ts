@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ritmoDelMes, topComercios, comparativaCategorias } from "../lib/estadisticas.ts";
+import { ritmoDelMes, topComercios, comparativaCategorias, gastoPorDia } from "../lib/estadisticas.ts";
 
 const AHORA = new Date("2026-09-28T10:00:00Z"); // 28 sept en Madrid
 
@@ -101,4 +101,20 @@ test("comparativa usa netos", () => {
   assert.deepEqual(comparativaCategorias(actual, anterior), [
     { id: "r", nombre: "Restaurantes", actual: 15, anterior: 30, diferencia: -15 },
   ]);
+});
+
+test("gasto por día: neto de cada día y null en los días que no han llegado", () => {
+  const movs = [
+    { fecha: "2026-09-01T10:00:00Z", importe: 10, tipo: "gasto" },
+    { fecha: "2026-09-01T22:30:00Z", importe: 5, tipo: "gasto" }, // 2 sept en Madrid
+    { fecha: "2026-09-02T09:00:00Z", importe: 2, tipo: "reembolso" },
+    { fecha: "2026-09-03T09:00:00Z", importe: null, tipo: "gasto" },
+  ];
+  const dias = gastoPorDia(movs, { y: 2026, m: 9 }, AHORA);
+  assert.equal(dias.length, 30);
+  assert.deepEqual(dias.slice(0, 4), [10, 3, 0, 0]);
+  assert.equal(dias[27], 0); // hoy
+  assert.equal(dias[28], null);
+  // Un mes pasado tiene todos sus días.
+  assert.equal(gastoPorDia([], { y: 2026, m: 8 }, AHORA).filter((d) => d === null).length, 0);
 });

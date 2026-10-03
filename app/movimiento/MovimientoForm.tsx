@@ -2,7 +2,8 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { guardarMovimientoManual } from "@/app/actions";
-import { estiloCategoria } from "@/lib/categorias-ui";
+import { estiloCategoria, GRIS, ICONO_AUTOMATICA } from "@/lib/categorias-ui";
+import { Trazo } from "@/app/Iconos";
 import { claveDeComercio } from "@/lib/aprender";
 import { parseAmount } from "@/lib/amount";
 import { repartir } from "@/lib/reparto";
@@ -58,9 +59,12 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
   const tuParte = total !== null && n > 1 ? repartir(total, n) : null;
 
   const opciones = [
-    { valor: "auto", texto: "Automática", emoji: "✨" },
-    ...categorias.map((c) => ({ valor: c.id, texto: c.nombre, emoji: estiloCategoria(c.nombre).emoji })),
-    { valor: "", texto: "Sin categoría", emoji: "—" },
+    { valor: "auto", texto: "Automática", color: GRIS, icono: ICONO_AUTOMATICA as string | null },
+    ...categorias.map((c) => {
+      const { color, icono } = estiloCategoria(c.nombre);
+      return { valor: c.id, texto: c.nombre, color, icono };
+    }),
+    { valor: "", texto: "Sin categoría", color: GRIS, icono: "M6 12h12" },
   ];
 
   return (
@@ -80,25 +84,27 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
         </label>
       </fieldset>
 
-      <label className="importe-grande">
-        <span className="sr-only">Importe en euros</span>
-        <input
-          name="importe"
-          inputMode="decimal"
-          placeholder="0,00"
-          defaultValue={importe}
-          onChange={(e) => setImporteEscrito(e.target.value)}
-          autoFocus={!editando || !importe}
-          autoComplete="off"
-          required
-        />
-        <span aria-hidden>€</span>
-      </label>
-      {tuParte !== null && (
-        <p className="tu-parte solo-gasto" aria-live="polite">
-          Tu parte: <strong>{formatearImporte(tuParte)}</strong> ({formatearImporte(total!)} entre {n})
-        </p>
-      )}
+      <div className="importe-libreta">
+        <label className="importe-grande">
+          <span className="sr-only">Importe en euros</span>
+          <input
+            name="importe"
+            inputMode="decimal"
+            placeholder="0,00"
+            defaultValue={importe}
+            onChange={(e) => setImporteEscrito(e.target.value)}
+            autoFocus={!editando || !importe}
+            autoComplete="off"
+            required
+          />
+          <span aria-hidden>€</span>
+        </label>
+        {tuParte !== null && (
+          <p className="tu-parte solo-gasto" aria-live="polite">
+            Tu parte: <strong>{formatearImporte(tuParte)}</strong> · {formatearImporte(total!)} entre {n}
+          </p>
+        )}
+      </div>
 
       <div className="tarjeta campos">
         <label className="campo">
@@ -143,10 +149,15 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
       <fieldset className="chips">
         <legend>Categoría</legend>
         {opciones.map((o) => (
-          <label key={o.valor || "sin"} className={`chip${o.valor === "auto" ? " solo-gasto" : ""}`}>
+          <label
+            key={o.valor || "sin"}
+            className={`chip${o.valor === "auto" ? " solo-gasto" : ""}`}
+            style={{ "--cat": o.color } as React.CSSProperties}
+          >
             <input type="radio" name="categoria_id" value={o.valor} defaultChecked={o.valor === categoriaId} />
             <span>
-              {o.emoji} {o.texto}
+              {o.icono ? <Trazo d={o.icono} tamaño={18} /> : <span className="chip-inicial">{o.texto.charAt(0)}</span>}
+              {o.texto}
             </span>
           </label>
         ))}

@@ -125,6 +125,11 @@ export function formatearImporte(n: number | null, moneda = "EUR"): string {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: moneda }).format(n);
 }
 
+/** Importe sin céntimos ("412 €"), para leyendas con poco sitio. */
+export function formatearImporteRedondo(n: number, moneda = "EUR"): string {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: moneda, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+}
+
 export function formatearHora(iso: string): string {
   return new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
 }

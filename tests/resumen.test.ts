@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { totalImportes, desglosePorCategoria, agruparPorDia, lineaResumen } from "../lib/resumen.ts";
+import { totalImportes, desglosePorCategoria, agruparPorDia, cuentaMovimientos, diferenciaConAnterior } from "../lib/resumen.ts";
 import { estiloCategoria } from "../lib/categorias-ui.ts";
 
 const AHORA = new Date("2026-09-28T10:00:00Z");
@@ -42,11 +42,13 @@ test("agruparPorDia mantiene el orden y suma cada día", () => {
   );
 });
 
-test("estiloCategoria: emoji conocido, inicial si es nueva, interrogación si no hay", () => {
-  assert.deepEqual(estiloCategoria("Supermercado"), { emoji: "🛒" });
-  assert.deepEqual(estiloCategoria("supermercado"), { emoji: "🛒" });
-  assert.deepEqual(estiloCategoria("Mascotas"), { emoji: "M" });
-  assert.deepEqual(estiloCategoria(null), { emoji: "?" });
+test("estiloCategoria: color e icono conocidos, gris con inicial si es nueva, interrogación si no hay", () => {
+  const super_ = estiloCategoria("Supermercado");
+  assert.equal(super_.color, "#2f7d5b");
+  assert.ok(super_.icono);
+  assert.deepEqual(estiloCategoria(" supermercado "), super_);
+  assert.deepEqual(estiloCategoria("Mascotas"), { color: "#5b6270", icono: null, inicial: "M" });
+  assert.deepEqual(estiloCategoria(null), { color: "#5b6270", icono: null, inicial: "?" });
 });
 
 const devoluciones = [
@@ -76,15 +78,21 @@ test("subtotal por día neto, también si el día solo tiene una devolución", (
   assert.equal(soloDevolucion[0].total, -20);
 });
 
-test("lineaResumen cuenta gastos con importe y devoluciones por separado", () => {
+test("cuentaMovimientos cuenta gastos con importe y devoluciones por separado", () => {
   const movs = [
     { importe: 10, tipo: "gasto" },
     { importe: null, tipo: "gasto" }, // pendiente sin importe: no cuenta
     { importe: 5 },
     { importe: 45, tipo: "reembolso" },
   ];
-  assert.equal(lineaResumen(movs, 0, 0, "agosto"), "2 gastos y 1 devolución");
-  // Intl pone un espacio no separable antes del "€": \s lo acepta.
-  assert.match(lineaResumen([{ importe: 3 }], 3, 10, "agosto"), /^1 gasto, 7,00\s€ menos que en agosto$/);
-  assert.equal(lineaResumen([{ importe: 3 }], 10, 10, "agosto"), "1 gasto, igual que en agosto");
+  assert.equal(cuentaMovimientos(movs), "2 gastos · 1 devolución");
+  assert.equal(cuentaMovimientos([{ importe: 3 }]), "1 gasto");
+  assert.equal(cuentaMovimientos([]), "0 gastos");
+});
+
+test("diferenciaConAnterior: null si el mes anterior no tuvo gasto", () => {
+  assert.equal(diferenciaConAnterior(3, 10), -7);
+  assert.equal(diferenciaConAnterior(10.1, 10), 0.1);
+  assert.equal(diferenciaConAnterior(10, 10), 0);
+  assert.equal(diferenciaConAnterior(10, 0), null);
 });

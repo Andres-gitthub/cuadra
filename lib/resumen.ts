@@ -1,4 +1,4 @@
-import { claveDia, etiquetaDia, formatearImporte } from "./dates.ts";
+import { claveDia, etiquetaDia } from "./dates.ts";
 
 type ConImporte = { importe: number | null; tipo?: string | null };
 type ConCategoria = ConImporte & { categoria_id: string | null; categories: { nombre: string } | null };
@@ -41,16 +41,18 @@ export function desglosePorCategoria(movs: ConCategoria[]): LineaDesglose[] {
     .sort((a, b) => b.total - a.total);
 }
 
-/** "3 gastos y 1 devolución, 12,00 € menos que en agosto". Solo cuentan los gastos con importe. */
-export function lineaResumen(movs: ConImporte[], total: number, totalAnterior: number, mesAnterior: string): string {
+/** "3 gastos · 1 devolución". Solo cuentan los gastos con importe. */
+export function cuentaMovimientos(movs: ConImporte[]): string {
   const gastos = movs.filter((m) => m.tipo !== "reembolso" && m.importe !== null).length;
   const devoluciones = movs.filter((m) => m.tipo === "reembolso").length;
-  let cuantos = `${gastos} ${gastos === 1 ? "gasto" : "gastos"}`;
-  if (devoluciones > 0) cuantos += ` y ${devoluciones} ${devoluciones === 1 ? "devolución" : "devoluciones"}`;
-  if (totalAnterior <= 0) return cuantos;
-  const diferencia = redondear(total - totalAnterior);
-  if (diferencia === 0) return `${cuantos}, igual que en ${mesAnterior}`;
-  return `${cuantos}, ${formatearImporte(Math.abs(diferencia))} ${diferencia < 0 ? "menos" : "más"} que en ${mesAnterior}`;
+  const cuantos = `${gastos} ${gastos === 1 ? "gasto" : "gastos"}`;
+  if (devoluciones === 0) return cuantos;
+  return `${cuantos} · ${devoluciones} ${devoluciones === 1 ? "devolución" : "devoluciones"}`;
+}
+
+/** Diferencia de gasto con el mes anterior, o null si el anterior no tuvo gasto con el que comparar. */
+export function diferenciaConAnterior(total: number, totalAnterior: number): number | null {
+  return totalAnterior > 0 ? redondear(total - totalAnterior) : null;
 }
 
 export type GrupoDia<T> = { clave: string; etiqueta: string; total: number; movimientos: T[] };

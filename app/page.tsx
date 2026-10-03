@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { claveMes, desplazarMes, formatearImporte, mesActual, nombreMes, parseMes, rangoMes } from "@/lib/dates";
-import { desglosePorCategoria, lineaResumen, totalImportes } from "@/lib/resumen";
+import { cuentaMovimientos, desglosePorCategoria, diferenciaConAnterior, totalImportes } from "@/lib/resumen";
+import { ritmoDelMes } from "@/lib/estadisticas";
 import { COLUMNAS_MOVIMIENTO, type Movimiento } from "@/lib/types";
 import { SelectorMes } from "./SelectorMes";
 import { DesgloseCategorias } from "./DesgloseCategorias";
@@ -8,6 +9,7 @@ import { MovimientosLista } from "./MovimientosLista";
 import { BarraInferior } from "./BarraInferior";
 import { CabeceraLibreta } from "./CabeceraLibreta";
 import { CerrarSesion } from "./CerrarSesion";
+import { Insignia } from "./Iconos";
 
 type Params = Promise<{ mes?: string; cat?: string }>;
 
@@ -42,6 +44,8 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
   const movimientos = (delMes.data ?? []) as unknown as Movimiento[];
   const total = totalImportes(movimientos);
   const totalAnterior = totalImportes(delAnterior.data ?? []);
+  const diferencia = diferenciaConAnterior(total, totalAnterior);
+  const ritmo = ritmoDelMes(total, mes, ahora);
   const desglose = desglosePorCategoria(movimientos);
 
   const cat = sp.cat;
@@ -54,9 +58,28 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
     <>
       <main className="page con-barra">
         <CabeceraLibreta>
-          <SelectorMes mes={mes} esActual={esActual} />
-          <p className="total">{formatearImporte(total)}</p>
-          <p className="subtitulo">{lineaResumen(movimientos, total, totalAnterior, nombreMes(anterior, false))}</p>
+          <div className="cabecera-fila">
+            <SelectorMes mes={mes} esActual={esActual} />
+            {esActual && (
+              <span className="subtitulo">
+                Día {ritmo.diasContados} de {ritmo.diasDelMes}
+              </span>
+            )}
+          </div>
+          <p className="etiqueta-total">{esActual ? "Gastado este mes" : `Gastado en ${nombreMes(mes, false)}`}</p>
+          <p className="total">
+            <span className="subrayado">{formatearImporte(total)}</span>
+          </p>
+          <div className="resumen-mes">
+            {diferencia !== null && (
+              <Insignia diferencia={diferencia}>
+                {diferencia === 0
+                  ? `Igual que en ${nombreMes(anterior, false)}`
+                  : `${formatearImporte(Math.abs(diferencia))} ${diferencia < 0 ? "menos" : "más"} que en ${nombreMes(anterior, false)}`}
+              </Insignia>
+            )}
+            <span className="subtitulo">{cuentaMovimientos(movimientos)}</span>
+          </div>
         </CabeceraLibreta>
 
         {error && <p className="error">Error cargando datos: {error.message}</p>}
