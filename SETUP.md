@@ -245,6 +245,44 @@ Se ejecuta automáticamente cada vez que pagas con una tarjeta de Apple Wallet.
 
 ✅ Listo: el próximo pago con Apple Pay aparecerá en la app en unos segundos.
 
+### 5.3 Pagos online: atajo manual "Gasto"
+La automatización de **Transacción** solo se ejecuta cuando **acercas** el iPhone o el reloj al datáfono. Si pagas con Apple Pay en una web o una app, Wallet te avisa igual, pero el atajo no se ejecuta y el gasto no llega. Para esos casos, crea este atajo y lánzalo justo después de pagar.
+
+**Crear el atajo**
+1. **Atajos** → pestaña **Atajos** → **+** → ponle de nombre **Gasto** (así podrás decir *"Oye Siri, gasto"*).
+2. Añade **Pedir entrada**:
+   - Tipo: **Número** (activa **Permitir decimales**).
+   - Pregunta: `¿Cuánto?`
+3. Añade otra **Pedir entrada**:
+   - Tipo: **Texto**.
+   - Pregunta: `¿Dónde?`
+4. Añade **Obtener contenido de URL**, configurada igual que en el paso 5.2 (misma URL, **POST**, cabecera `Authorization` con `Bearer TU_TOKEN`, cuerpo **JSON**), con estos 4 campos de tipo **Texto**:
+
+   | Clave | Valor |
+   |---|---|
+   | `source` | escribe `wallet` |
+   | `amount` | variable **Entrada proporcionada** del paso 2 (la del importe) |
+   | `merchant` | variable **Entrada proporcionada** del paso 3 (la del comercio) |
+   | `card` | escribe `Compra online` |
+
+   Si las dos variables se llaman igual, tócalas para ver a qué paso pertenecen.
+5. Añade **Obtener valor del diccionario**: clave `importe`, diccionario: **Contenido de la URL**.
+6. Añade **Mostrar notificación** con el texto: `Guardado: ` + la variable **Valor del diccionario** + ` €`.
+   (Si sale *"Guardado:  €"*, sin número, o el importe no se entendió y el gasto está en **Pendientes**, o ya existía y no se guardó otra vez.)
+
+**Tenerlo a mano** (elige una opción)
+- **Botón de acción** (iPhone 15 Pro y posteriores): **Ajustes → Botón de acción → Atajo → Gasto**.
+- **Doble toque en la parte trasera:** **Ajustes → Accesibilidad → Tocar → Tocar atrás → Doble toque → Gasto**.
+- **Pantalla de inicio:** en el atajo, **⋯ → ⓘ → Añadir a pantalla de inicio**.
+
+**Cómo se usa**
+Pagas online → lanzas **Gasto** → escribes `23,45` → **OK** → escribes `Amazon` → **OK** → aparece *"Guardado: 23,45 €"*.
+
+- Escribe el comercio **corto y siempre igual** (`Amazon`, no `amazon.es pedido 402`). Así se categoriza solo con las palabras clave y con lo que la app ha aprendido al usar **Recordar**.
+- Si no sabes el comercio, deja el texto vacío: el gasto se guarda en **Pendientes** para completarlo después.
+- Se guarda con la fecha y hora en que lanzas el atajo, así que lánzalo al pagar, no días después. Si se te pasa, añádelo desde la app con **Añadir**, donde puedes cambiar la fecha.
+- No lo uses en pagos en tienda: esos ya los guarda la automatización. Si lo haces con el mismo importe y comercio en menos de 2 minutos, la app descarta el duplicado, pero si escribes el comercio distinto lo verás dos veces.
+
 ---
 
 ## 6. Atajo 2: SMS del banco
