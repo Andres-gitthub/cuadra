@@ -19,7 +19,6 @@
 
 ## The problem
 
-<!-- Draft written from the repo. Rewrite it in your own words before publishing. -->
 An expense tracker is only as good as the data in it, and typing every purchase by hand is the habit that never sticks. So Cuadra logs Apple Pay payments and bank text messages on its own.
 
 The other thing a bank statement gets wrong is what I actually spent. If I pay a 60 € dinner for three, the bank says 60 €, but my share is 20 €. That part is still manual: I open the expense, split it between three, and only my share counts. Money paid back to me, like a Bizum or settling a Tricount, I log as a refund, and it subtracts from the month.
