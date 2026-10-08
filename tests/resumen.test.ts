@@ -47,6 +47,7 @@ test("estiloCategoria: color e icono conocidos, gris con inicial si es nueva, in
   assert.equal(super_.color, "#2f7d5b");
   assert.ok(super_.icono);
   assert.deepEqual(estiloCategoria(" supermercado "), super_);
+  assert.ok(estiloCategoria("Deporte").icono);
   assert.deepEqual(estiloCategoria("Mascotas"), { color: "#5b6270", icono: null, inicial: "M" });
   assert.deepEqual(estiloCategoria(null), { color: "#5b6270", icono: null, inicial: "?" });
 });

@@ -11,6 +11,7 @@ const ESTILOS: Record<string, { color: string; icono: string }> = {
   hogar: { color: "#a16207", icono: "M4 11 12 4l8 7v9h-5v-6H9v6H4Z" },
   salud: { color: "#0e7490", icono: "M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6Z" },
   ocio: { color: "#be3a5c", icono: "M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6ZM14 6v12" },
+  deporte: { color: "#5c7c0a", icono: "M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12" },
 };
 
 /** Icono de la opción "Automática" del formulario. */

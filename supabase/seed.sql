@@ -19,6 +19,7 @@ begin
     (uid, 'Suscripciones', array['netflix','spotify','hbo','disney','apple.com','icloud','google','youtube','prime video','dazn','movistar']),
     (uid, 'Hogar',         array['iberdrola','endesa','naturgy','holaluz','agua','vodafone','orange','digi','leroy merlin','bricomart']),
     (uid, 'Salud',         array['farmacia','clinica','dentista','optica','hospital','sanitas','adeslas']),
-    (uid, 'Ocio',          array['cine','teatro','steam','playstation','nintendo','ticketmaster','gimnasio','gym','basic fit'])
+    (uid, 'Ocio',          array['cine','teatro','steam','playstation','nintendo','ticketmaster']),
+    (uid, 'Deporte',       array['gimnasio','gym','basic fit','fitness','crossfit','mcfit','altafit','anytime fitness','holmes place','padel','playtomic','piscina','polideportivo','yoga','pilates'])
   on conflict (user_id, nombre) do nothing;
 end $$;
