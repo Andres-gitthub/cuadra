@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { conBase } from "@/lib/rutas";
 import { Trazo } from "./Iconos";
 
 const PESTAÑAS = [
@@ -11,28 +12,31 @@ const PESTAÑAS = [
 ];
 
 /** Pestañas con "Añadir" a la derecha: al alcance del pulgar y sin tapar la última fila de la lista. */
-export function BarraInferior({ pendientes }: { pendientes: number }) {
+export function BarraInferior({ pendientes, base = "" }: { pendientes: number; base?: string }) {
   const ruta = usePathname();
 
   return (
     <nav className="barra-inferior" aria-label="Navegación principal">
-      {PESTAÑAS.map((p) => (
-        <Link
-          key={p.href}
-          href={p.href}
-          className={`pestaña${ruta === p.href ? " activa" : ""}`}
-          aria-current={ruta === p.href ? "page" : undefined}
-        >
-          <span className="con-globo">
-            <Trazo d={p.icono} />
-            {p.href === "/pendientes" && pendientes > 0 && (
-              <span className="globo">{pendientes > 99 ? "99+" : pendientes}</span>
-            )}
-          </span>
-          {p.texto}
-        </Link>
-      ))}
-      <Link href="/movimiento/nuevo" className="pestaña añadir">
+      {PESTAÑAS.map((p) => {
+        const href = conBase(base, p.href);
+        return (
+          <Link
+            key={p.href}
+            href={href}
+            className={`pestaña${ruta === href ? " activa" : ""}`}
+            aria-current={ruta === href ? "page" : undefined}
+          >
+            <span className="con-globo">
+              <Trazo d={p.icono} />
+              {p.href === "/pendientes" && pendientes > 0 && (
+                <span className="globo">{pendientes > 99 ? "99+" : pendientes}</span>
+              )}
+            </span>
+            {p.texto}
+          </Link>
+        );
+      })}
+      <Link href={conBase(base, "/movimiento/nuevo")} className="pestaña añadir">
         <span className="añadir-icono">
           <Trazo d="M12 5v14M5 12h14" tamaño={22} grosor={2.4} />
         </span>

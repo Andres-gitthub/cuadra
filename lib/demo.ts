@@ -5,6 +5,9 @@ import type { Categoria, Movimiento, TipoMovimiento } from "./types.ts";
 // Datos inventados para la demo pública: nada sale de la base de datos ni de cuentas reales.
 // Son deterministas: el mismo mes da siempre los mismos movimientos, para que las capturas se puedan repetir.
 
+/** Lo que se muestra al intentar guardar o borrar en la demo. */
+export const AVISO_DEMO = "Es una demo con datos inventados: no se guarda ni se borra nada.";
+
 const NOMBRES = [
   "Supermercado",
   "Restaurantes",
@@ -18,7 +21,10 @@ const NOMBRES = [
 ] as const;
 type NombreCategoria = (typeof NOMBRES)[number];
 
-export const CATEGORIAS_DEMO: Categoria[] = NOMBRES.map((nombre) => ({ id: idCategoria(nombre), nombre }));
+/** Por nombre, como las devuelve la base de datos. */
+export const CATEGORIAS_DEMO: Categoria[] = NOMBRES.map((nombre) => ({ id: idCategoria(nombre), nombre })).sort((a, b) =>
+  a.nombre.localeCompare(b.nombre, "es"),
+);
 
 function idCategoria(nombre: NombreCategoria): string {
   return `demo-${nombre.toLowerCase()}`;
@@ -174,6 +180,13 @@ export function movimientosDemo(mes: Mes, ahora = new Date()): Movimiento[] {
   return movs
     .filter((m) => new Date(m.fecha).getTime() <= limite)
     .sort((a, b) => (a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0));
+}
+
+/** Un movimiento de la demo por su id ("demo-2026-09-12"), o null si no existe. */
+export function movimientoDemoPorId(id: string, ahora = new Date()): Movimiento | null {
+  const m = id.match(/^demo-(\d{4})-(\d{2})-\d+$/);
+  if (!m) return null;
+  return movimientosDemo({ y: Number(m[1]), m: Number(m[2]) }, ahora).find((x) => x.id === id) ?? null;
 }
 
 /** Movimientos sin revisar de la demo: solo los del mes en curso. */

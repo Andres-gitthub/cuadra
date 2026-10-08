@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatearFecha, formatearImporte } from "@/lib/dates";
+import { conBase } from "@/lib/rutas";
 import type { Movimiento } from "@/lib/types";
 import { BarraInferior } from "../BarraInferior";
 import { CabeceraLibreta } from "../CabeceraLibreta";
@@ -10,10 +11,13 @@ export type DatosPendientes = {
   /** Movimientos sin revisar, del más reciente al más antiguo. */
   pendientes: Movimiento[];
   error?: string | null;
+  /** "" en la app, "/demo" en la demo (donde descartar solo avisa). */
+  base?: string;
 };
 
 /** Pantalla de Pendientes a partir de los datos ya leídos: no consulta nada. */
-export function PendientesVista({ pendientes, error }: DatosPendientes) {
+export function PendientesVista({ pendientes, error, base = "" }: DatosPendientes) {
+  const volver = conBase(base, "/pendientes");
   return (
     <>
       <main className="page con-barra">
@@ -46,8 +50,14 @@ export function PendientesVista({ pendientes, error }: DatosPendientes) {
                 <p className="pendiente-comercio">{m.comercio ?? <em>Sin comercio</em>}</p>
                 {m.texto_original && <blockquote className="texto-original">{m.texto_original}</blockquote>}
                 <div className="pendiente-acciones">
-                  <BorrarBoton id={m.id} volver="/pendientes" texto="Descartar" className="btn btn-secundario" />
-                  <Link href={`/movimiento/${m.id}?volver=/pendientes`} className="btn">
+                  <BorrarBoton
+                    id={m.id}
+                    volver={volver}
+                    texto="Descartar"
+                    className="btn btn-secundario"
+                    demo={Boolean(base)}
+                  />
+                  <Link href={`${conBase(base, `/movimiento/${m.id}`)}?volver=${volver}`} className="btn">
                     Revisar
                   </Link>
                 </div>
@@ -56,7 +66,7 @@ export function PendientesVista({ pendientes, error }: DatosPendientes) {
           </ul>
         )}
       </main>
-      <BarraInferior pendientes={pendientes.length} />
+      <BarraInferior pendientes={pendientes.length} base={base} />
     </>
   );
 }

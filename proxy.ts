@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { esRutaDemo } from "@/lib/rutas";
 
 const RUTAS_PUBLICAS = ["/login", "/auth/"];
 
@@ -27,7 +28,8 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const path = request.nextUrl.pathname;
-  const publica = RUTAS_PUBLICAS.some((r) => path.startsWith(r));
+  // La demo es pública: solo muestra datos inventados y no lee ni escribe en la base.
+  const publica = esRutaDemo(path) || RUTAS_PUBLICAS.some((r) => path.startsWith(r));
 
   if (!data?.claims && !publica) {
     const url = request.nextUrl.clone();

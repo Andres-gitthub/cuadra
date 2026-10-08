@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CATEGORIAS_DEMO, movimientosDemo, pendientesDemo } from "../lib/demo.ts";
+import { CATEGORIAS_DEMO, movimientoDemoPorId, movimientosDemo, pendientesDemo } from "../lib/demo.ts";
 import { rangoMes } from "../lib/dates.ts";
 import { agruparPorDia, desglosePorCategoria, totalImportes } from "../lib/resumen.ts";
 import { leerReparto } from "../lib/reparto.ts";
@@ -62,6 +62,17 @@ test("demo: total, desglose por categoría y subtotales por día cuadran", () =>
   assert.equal(redondear(agruparPorDia(movs, AHORA).reduce((s, d) => s + d.total, 0)), total);
 });
 
-test("demo: cada categoría tiene su color e icono", () => {
+test("demo: cada categoría tiene su color e icono, en orden alfabético como en la base", () => {
   for (const c of CATEGORIAS_DEMO) assert.ok(estiloCategoria(c.nombre).icono, c.nombre);
+  const nombres = CATEGORIAS_DEMO.map((c) => c.nombre);
+  assert.deepEqual(nombres, [...nombres].sort((a, b) => a.localeCompare(b, "es")));
+});
+
+test("demo: un movimiento se encuentra por su id, de este mes o de uno pasado", () => {
+  const deSept = movimientosDemo(SEPT, AHORA)[3];
+  const deAgosto = movimientosDemo(AGOSTO, AHORA)[0];
+  assert.deepEqual(movimientoDemoPorId(deSept.id, AHORA), deSept);
+  assert.deepEqual(movimientoDemoPorId(deAgosto.id, AHORA), deAgosto);
+  assert.equal(movimientoDemoPorId("demo-2026-09-9999", AHORA), null);
+  assert.equal(movimientoDemoPorId("8d0e5f3a-real-uuid", AHORA), null);
 });

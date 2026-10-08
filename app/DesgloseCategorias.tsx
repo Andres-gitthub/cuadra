@@ -2,11 +2,12 @@ import Link from "next/link";
 import { formatearImporteRedondo } from "@/lib/dates";
 import { estiloCategoria } from "@/lib/categorias-ui";
 import type { LineaDesglose } from "@/lib/resumen";
+import { conBase } from "@/lib/rutas";
 
-type Props = { lineas: LineaDesglose[]; claveMes: string; seleccionada: string | undefined };
+type Props = { lineas: LineaDesglose[]; claveMes: string; seleccionada: string | undefined; base?: string };
 
 /** Gasto por categoría: barra apilada y leyenda. Tocar una categoría filtra la lista; tocarla otra vez quita el filtro. */
-export function DesgloseCategorias({ lineas, claveMes, seleccionada }: Props) {
+export function DesgloseCategorias({ lineas, claveMes, seleccionada, base = "" }: Props) {
   if (lineas.length === 0) return null;
   const color = (l: LineaDesglose) => estiloCategoria(l.id ? l.nombre : null).color;
 
@@ -33,7 +34,8 @@ export function DesgloseCategorias({ lineas, claveMes, seleccionada }: Props) {
         {lineas.map((l) => {
           const clave = l.id ?? "sin";
           const activa = seleccionada === clave;
-          const href = activa ? `/?mes=${claveMes}` : `/?mes=${claveMes}&cat=${clave}`;
+          const inicio = `${conBase(base, "/")}?mes=${claveMes}`;
+          const href = activa ? inicio : `${inicio}&cat=${clave}`;
           return (
             <Link
               key={clave}

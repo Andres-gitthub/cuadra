@@ -4,10 +4,10 @@ import { leerReparto } from "@/lib/reparto";
 import type { Movimiento } from "@/lib/types";
 import { FilaMovimiento } from "./FilaMovimiento";
 
-type Props = { movimientos: Movimiento[]; volver: string; vacio?: string };
+type Props = { movimientos: Movimiento[]; volver: string; vacio?: string; base?: string };
 
 /** Movimientos agrupados por día, con el subtotal de cada día. */
-export function MovimientosLista({ movimientos, volver, vacio = "No hay movimientos." }: Props) {
+export function MovimientosLista({ movimientos, volver, vacio = "No hay movimientos.", base = "" }: Props) {
   if (movimientos.length === 0) return <p className="vacio">{vacio}</p>;
 
   return (
@@ -33,6 +33,7 @@ export function MovimientosLista({ movimientos, volver, vacio = "No hay movimien
                 revisado={m.revisado}
                 hora={formatearHora(m.fecha)}
                 volver={volver}
+                base={base}
               />
             ))}
           </ul>

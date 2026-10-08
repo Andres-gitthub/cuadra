@@ -1,6 +1,7 @@
 import { claveMes, desplazarMes, formatearImporte, mesActual, nombreMes, type Mes } from "@/lib/dates";
 import { totalImportes } from "@/lib/resumen";
 import { comparativaCategorias, gastoPorDia, ritmoDelMes, topComercios } from "@/lib/estadisticas";
+import { conBase } from "@/lib/rutas";
 import type { Movimiento } from "@/lib/types";
 import { BarraInferior } from "../BarraInferior";
 import { CabeceraLibreta } from "../CabeceraLibreta";
@@ -15,10 +16,12 @@ export type DatosEstadisticas = {
   previos: Movimiento[];
   pendientes: number;
   error?: string | null;
+  /** "" en la app, "/demo" en la demo. */
+  base?: string;
 };
 
 /** Pantalla de Estadísticas a partir de los datos ya leídos: no consulta nada. */
-export function EstadisticasVista({ mes, ahora, movimientos, previos, pendientes, error }: DatosEstadisticas) {
+export function EstadisticasVista({ mes, ahora, movimientos, previos, pendientes, error, base = "" }: DatosEstadisticas) {
   const anterior = desplazarMes(mes, -1);
   const esActual = claveMes(mes) === claveMes(mesActual(ahora));
   const total = totalImportes(movimientos);
@@ -33,7 +36,7 @@ export function EstadisticasVista({ mes, ahora, movimientos, previos, pendientes
     <>
       <main className="page con-barra">
         <CabeceraLibreta>
-          <SelectorMes mes={mes} esActual={esActual} ruta="/estadisticas" />
+          <SelectorMes mes={mes} esActual={esActual} ruta={conBase(base, "/estadisticas")} />
           <h1 className="titulo-grande">Estadísticas</h1>
         </CabeceraLibreta>
 
@@ -119,7 +122,7 @@ export function EstadisticasVista({ mes, ahora, movimientos, previos, pendientes
           </section>
         )}
       </main>
-      <BarraInferior pendientes={pendientes} />
+      <BarraInferior pendientes={pendientes} base={base} />
     </>
   );
 }

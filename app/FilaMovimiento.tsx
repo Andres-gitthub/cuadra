@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { borrarMovimiento } from "@/app/actions";
 import { formatearImporte } from "@/lib/dates";
+import { AVISO_DEMO } from "@/lib/demo";
+import { conBase } from "@/lib/rutas";
 import { IconoCategoria, IconoOrigen } from "./Iconos";
 
 const ANCHO_BORRAR = 88;
@@ -21,6 +23,8 @@ type Props = {
   personas?: number;
   hora: string;
   volver: string;
+  /** "" en la app, "/demo" en la demo (donde borrar solo avisa). */
+  base?: string;
 };
 
 /** Fila de un movimiento. Deslizar a la izquierda muestra "Borrar"; tocarla abre la edición. */
@@ -71,14 +75,29 @@ export function FilaMovimiento(p: Props) {
 
   return (
     <li className={`fila-deslizable${desplazamiento < 0 ? " deslizando" : ""}`}>
-      <form action={borrarMovimiento} className="accion-borrar">
-        <input type="hidden" name="id" value={p.id} />
-        <input type="hidden" name="volver" value={p.volver} />
-        <button tabIndex={abierta ? 0 : -1}>Borrar</button>
-      </form>
+      {p.base ? (
+        <div className="accion-borrar">
+          <button
+            type="button"
+            tabIndex={abierta ? 0 : -1}
+            onClick={() => {
+              setDesplazamiento(0);
+              alert(AVISO_DEMO);
+            }}
+          >
+            Borrar
+          </button>
+        </div>
+      ) : (
+        <form action={borrarMovimiento} className="accion-borrar">
+          <input type="hidden" name="id" value={p.id} />
+          <input type="hidden" name="volver" value={p.volver} />
+          <button tabIndex={abierta ? 0 : -1}>Borrar</button>
+        </form>
+      )}
 
       <Link
-        href={`/movimiento/${p.id}?volver=${encodeURIComponent(p.volver)}`}
+        href={`${conBase(p.base ?? "", `/movimiento/${p.id}`)}?volver=${encodeURIComponent(p.volver)}`}
         className={`fila${arrastrando ? "" : " suave"}`}
         style={{ transform: `translateX(${desplazamiento}px)` }}
         onTouchStart={alEmpezar}

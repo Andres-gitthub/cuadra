@@ -8,6 +8,7 @@ import { claveDeComercio } from "@/lib/aprender";
 import { parseAmount } from "@/lib/amount";
 import { repartir } from "@/lib/reparto";
 import { formatearImporte } from "@/lib/dates";
+import { AVISO_DEMO } from "@/lib/demo";
 import type { Categoria, EstadoFormulario, TipoMovimiento } from "@/lib/types";
 
 type Props = {
@@ -26,9 +27,11 @@ type Props = {
     /** Personas entre las que se reparte (1 = sin repartir). Con reparto, importe es el total pagado. */
     personas?: number;
   };
+  /** En la demo, guardar solo avisa: el formulario no llega al servidor. */
+  demo?: boolean;
 };
 
-export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: Props) {
+export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial, demo }: Props) {
   const [estado, accion, guardando] = useActionState<EstadoFormulario, FormData>(guardarMovimientoManual, {
     error: null,
   });
@@ -68,7 +71,19 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial }: P
   ];
 
   return (
-    <form key={estado.intento ?? 0} action={accion} className="form-rapido">
+    <form
+      key={estado.intento ?? 0}
+      action={demo ? undefined : accion}
+      onSubmit={
+        demo
+          ? (e) => {
+              e.preventDefault();
+              alert(AVISO_DEMO);
+            }
+          : undefined
+      }
+      className="form-rapido"
+    >
       {inicial.id && <input type="hidden" name="id" value={inicial.id} />}
       <input type="hidden" name="volver" value={volver} />
 
