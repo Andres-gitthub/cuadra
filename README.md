@@ -1,6 +1,6 @@
 # Cuadra
 
-**A personal expense tracker that fills itself in. Apple Pay payments and bank text messages are logged automatically, so what's left for me is looking at the numbers.**
+**A personal expense tracker that mostly fills itself in. Apple Pay payments and bank text messages are logged automatically, so I only type what the bank can't know: splitting a bill and money paid back to me.**
 
 **[Try the live demo →](https://cuadra-phi-green.vercel.app/demo)** No account needed. It runs on invented data and nothing you tap is saved. The interface is in Spanish.
 
@@ -20,7 +20,9 @@
 ## The problem
 
 <!-- Draft written from the repo. Rewrite it in your own words before publishing. -->
-An expense tracker is only as good as the data in it, and typing every purchase by hand is the habit that never sticks. On top of that, what leaves my account isn't what I actually spend: if I pay a 60 € dinner and get 45 € back by Bizum, it cost me 15 €. Cuadra captures spending without me doing anything and nets out what comes back, so the monthly number is the real one.
+An expense tracker is only as good as the data in it, and typing every purchase by hand is the habit that never sticks. So Cuadra logs Apple Pay payments and bank text messages on its own.
+
+The other thing a bank statement gets wrong is what I actually spent. If I pay a 60 € dinner for three, the bank says 60 €, but my share is 20 €. That part is still manual: I open the expense, split it between three, and only my share counts. Money paid back to me, like a Bizum or settling a Tricount, I log as a refund, and it subtracts from the month.
 
 ## What it does
 
@@ -29,7 +31,7 @@ An expense tracker is only as good as the data in it, and typing every purchase 
 | **Inicio** (Home) | How much have I spent this month, and is it more or less than last month? A stacked bar splits it by category (tap one to filter the list), and below it every movement, grouped by day with daily subtotals. Swipe a row to delete it. |
 | **Estadísticas** (Stats) | Am I on pace? The average per day, a bar for every day of the month against that average, and a month-end forecast at the current pace. Plus where the money goes by merchant, and how each category moved against last month. |
 | **Pendientes** (To review) | Bank messages the parser couldn't read with certainty, shown with their original text so I can complete or discard them. |
-| **Añadir** (Add) | Manual entry for anything that isn't captured, or money paid back to me. A bill can be split equally between people, and only my share is stored. |
+| **Añadir** (Add) | Manual entry for anything that isn't captured, or money paid back to me. Any expense, including one captured automatically, can be opened and split equally between people, and then only my share is stored. |
 
 In the background:
 
@@ -64,7 +66,7 @@ Examples from the parser's test suite (made-up messages):
 ## Product decisions
 
 - **Never guess with money.** The parser keeps only what it's sure of. Two amounts, a foreign currency or a missing merchant send the message to *To review* with its original text. An amount like `1,234` is rejected as ambiguous instead of being read as either one thousand or one euro.
-- **What I really spent, not what left my account.** A refund (a Bizum for my share of a dinner, settling a Tricount) is its own type of movement and subtracts from the month and from its category. Splitting a bill stores my share and keeps a note of the total.
+- **What I really spent, not what left my account.** A refund (a Bizum for my share of a dinner, settling a Tricount) is its own type of movement, logged by hand, and subtracts from the month and from its category. Splitting a bill stores my share and keeps a note of the total, so it can be edited later without dividing twice.
 - **Learn from corrections.** Fixing a category once is enough: the merchant's keyword moves to that category, and past expenses move with it. When several keywords match, the longest and most specific one wins.
 - **Capture has to survive the iPhone.** Shortcuts capitalises field names, autocorrect slips in spaces, and pasted tokens bring invisible characters. The endpoint normalises all of that, and when it rejects a request it says why without revealing the expected token.
 - **Built for one person.** There is no sign-up: one owner account, sign-ups disabled in Supabase, and row-level security on every table.
