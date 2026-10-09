@@ -98,3 +98,7 @@ To run your own copy, start with [`EMPIEZA-AQUI.md`](EMPIEZA-AQUI.md), a short g
 ## Privacy
 
 No financial data, keys or tokens live in this repository: the only data in it is the made-up test messages and the demo's invented movements. Real movements are stored in my own Supabase project behind row-level security.
+
+## License
+
+[MIT](LICENSE).
