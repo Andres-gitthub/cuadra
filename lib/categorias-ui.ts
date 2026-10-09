@@ -1,16 +1,16 @@
 // Color e icono de cada categoría en la interfaz. Se asignan por nombre para no tocar la base de datos:
 // una categoría nueva que no esté aquí se muestra en gris con su inicial.
-export const GRIS = "#5b6270";
+export const GRIS = "#6b6b63";
 
 const ESTILOS: Record<string, { color: string; icono: string }> = {
   supermercado: { color: "#2f7d5b", icono: "M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 7H6M9 19.5h.01M17 19.5h.01" },
-  restaurantes: { color: "#c2410c", icono: "M7 3v18M4 3v5a3 3 0 0 0 6 0V3M17 21V3c-2 1.5-3 4-3 8h3" },
-  transporte: { color: "#2440b3", icono: "M4 16v-3l2-6h12l2 6v3H4ZM7 16v3M17 16v3M7.5 12.5h.01M16.5 12.5h.01" },
-  compras: { color: "#9d3d8f", icono: "M6 8h12l-1 12H7L6 8ZM9 8V6a3 3 0 0 1 6 0v2" },
+  restaurantes: { color: "#bc470f", icono: "M7 3v18M4 3v5a3 3 0 0 0 6 0V3M17 21V3c-2 1.5-3 4-3 8h3" },
+  transporte: { color: "#2b49a8", icono: "M4 16v-3l2-6h12l2 6v3H4ZM7 16v3M17 16v3M7.5 12.5h.01M16.5 12.5h.01" },
+  compras: { color: "#8a3d85", icono: "M6 8h12l-1 12H7L6 8ZM9 8V6a3 3 0 0 1 6 0v2" },
   suscripciones: { color: "#6d4fc2", icono: "M4 8h16v11H4ZM8 4l4 4 4-4" },
-  hogar: { color: "#a16207", icono: "M4 11 12 4l8 7v9h-5v-6H9v6H4Z" },
+  hogar: { color: "#9a6a0b", icono: "M4 11 12 4l8 7v9h-5v-6H9v6H4Z" },
   salud: { color: "#0e7490", icono: "M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6Z" },
-  ocio: { color: "#be3a5c", icono: "M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6ZM14 6v12" },
+  ocio: { color: "#b23a5a", icono: "M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6ZM14 6v12" },
   deporte: { color: "#5c7c0a", icono: "M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12" },
 };
 

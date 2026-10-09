@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { RegistrarSW } from "./RegistrarSW";
 import "./globals.css";
-import { Schibsted_Grotesk } from "next/font/google";
+import { Fraunces, Instrument_Sans } from "next/font/google";
 
-const fuente = Schibsted_Grotesk({ subsets: ["latin"], variable: "--fuente", display: "swap" });
+const fuente = Instrument_Sans({ subsets: ["latin"], variable: "--fuente", display: "swap" });
+const fuenteTitulo = Fraunces({ subsets: ["latin"], variable: "--fuente-titulo", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Cuadra",
@@ -21,12 +22,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#fbfcfd",
+  themeColor: "#f3f0e8",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={fuente.variable}>
+    <html lang="es" className={`${fuente.variable} ${fuenteTitulo.variable}`}>
       <body>
         {children}
         <RegistrarSW />
