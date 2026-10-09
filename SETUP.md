@@ -50,7 +50,7 @@ La app necesita estas 5 variables. Irás apuntando sus valores durante la guía:
 2. Abre el archivo `supabase/migrations/0001_init.sql` de este proyecto, copia **todo** su contenido y pégalo.
 3. Pulsa **Run**. Debe aparecer *Success. No rows returned*. (Si Supabase avisa de operaciones potencialmente destructivas, confirma: el script solo crea cosas.)
 4. Comprueba en **Table Editor** que existen las tablas `transactions` y `categories`.
-5. Repite los pasos 1–3 con `supabase/migrations/0002_tipo_movimiento.sql` (añade el tipo "gasto" / "devolución"). Si más adelante aparecen migraciones nuevas (`0003_…`), ejecútalas también en orden.
+5. Repite los pasos 1–3 con `supabase/migrations/0002_tipo_movimiento.sql` (añade el tipo "gasto" / "devolución") y después con `supabase/migrations/0003_categoria_deporte.sql` (la categoría Deporte). Si más adelante aparecen migraciones nuevas (`0004_…`), ejecútalas también en orden.
 
 > El script se puede ejecutar varias veces sin problema: lo que ya existe se mantiene y lo que falta se crea. Si algo salió a medias, vuelve a ejecutarlo entero.
 
@@ -65,7 +65,7 @@ La app necesita estas 5 variables. Irás apuntando sus valores durante la guía:
 2. Pega el contenido de `supabase/seed.sql`.
 3. En la línea `where email = 'TU_EMAIL@ejemplo.com'` cambia el email por el tuyo (el mismo del paso 1.3).
 4. **Run** → *Success*.
-5. En **Table Editor → categories** verás 8 categorías. Puedes editar la columna `palabras_clave` cuando quieras: si el nombre del comercio contiene alguna de esas palabras, el gasto se asigna a esa categoría. Escríbelas en minúsculas.
+5. En **Table Editor → categories** verás 9 categorías. Puedes editar la columna `palabras_clave` cuando quieras: si el nombre del comercio contiene alguna de esas palabras, el gasto se asigna a esa categoría. Escríbelas en minúsculas.
 
 ### 1.5 Impedir que otras personas se registren
 1. **Authentication** → **Sign In / Providers** (en algunas versiones: **Providers → Email**).
@@ -139,6 +139,8 @@ Guárdalo en tu gestor de contraseñas. 👉 Es tu `INGEST_TOKEN`.
 ## 3. Vercel (publicar la app)
 
 ### 3.1 Subir el código a GitHub
+> Si ya hiciste **Fork** del repositorio original, tu copia ya está en GitHub: salta este paso y ve al 3.2 (un fork de un repositorio público es público; no pasa nada, los secretos no están en el código).
+
 1. Crea una cuenta en <https://github.com> si no tienes.
 2. **New repository** → nombre `cuadra` → marca **Private** → **Create repository**.
 3. Sube el código de esta carpeta. La forma más sencilla, desde la terminal y dentro de la carpeta del proyecto:
@@ -322,6 +324,7 @@ Sustituye `TU_URL` y `TU_TOKEN`:
 curl -i -X POST TU_URL/api/ingest -H "Authorization: Bearer TU_TOKEN" -H "Content-Type: application/json" -d '{"source":"wallet","amount":"12,34 €","merchant":"Mercadona","card":"Prueba"}'
 ```
 Respuesta esperada: `HTTP/2 201` y `{"ok":true,"id":"…","importe":12.34,"comercio":"Mercadona","revisado":true}`.
+Esto guarda un gasto de verdad: bórralo después desde la app (desliza la fila hacia la izquierda).
 
 Sin token debe devolver **401**:
 ```bash
