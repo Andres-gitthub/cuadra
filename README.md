@@ -91,7 +91,9 @@ Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Supabase (P
 - **The ingest endpoint** compares the token in constant time and is the only code that uses the server-side admin client, always on behalf of the single owner.
 - **Dates are Europe/Madrid**, wherever the server runs.
 
-Developer notes (in Spanish): [`docs/desarrollo.md`](docs/desarrollo.md). Setting it up from scratch, Shortcuts included: [`SETUP.md`](SETUP.md).
+Developer notes (in Spanish): [`docs/desarrollo.md`](docs/desarrollo.md).
+
+To run your own copy, start with [`EMPIEZA-AQUI.md`](EMPIEZA-AQUI.md), a short guide in Spanish: what you need and the four steps. The full walkthrough from scratch, Shortcuts included, is [`SETUP.md`](SETUP.md).
 
 ## Privacy
 
