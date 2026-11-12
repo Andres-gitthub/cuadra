@@ -44,8 +44,10 @@ alter table public.transactions
   add constraint transactions_origen_check check (origen in ('manual', 'wallet', 'sms', 'fijo'));
 
 -- Un fijo no puede generar dos movimientos en el mismo instante: evita duplicados si dos cargas coinciden.
+-- No es parcial a propósito: el upsert de PostgREST (ON CONFLICT) no encaja con un índice parcial.
+-- Los movimientos sin fijo no chocan entre sí porque en Postgres los NULL son distintos.
 create unique index if not exists transactions_fijo_fecha_idx
-  on public.transactions (gasto_fijo_id, fecha) where gasto_fijo_id is not null;
+  on public.transactions (gasto_fijo_id, fecha);
 
 grant select, insert, update, delete on public.gastos_fijos to authenticated, service_role;
 alter table public.gastos_fijos enable row level security;
