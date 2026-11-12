@@ -50,7 +50,7 @@ La app necesita estas 5 variables. Irás apuntando sus valores durante la guía:
 2. Abre el archivo `supabase/migrations/0001_init.sql` de este proyecto, copia **todo** su contenido y pégalo.
 3. Pulsa **Run**. Debe aparecer *Success. No rows returned*. (Si Supabase avisa de operaciones potencialmente destructivas, confirma: el script solo crea cosas.)
 4. Comprueba en **Table Editor** que existen las tablas `transactions` y `categories`.
-5. Repite los pasos 1–3 con `supabase/migrations/0002_tipo_movimiento.sql` (añade el tipo "gasto" / "devolución") y después con `supabase/migrations/0003_categoria_deporte.sql` (la categoría Deporte). Si más adelante aparecen migraciones nuevas (`0004_…`), ejecútalas también en orden.
+5. Repite los pasos 1–3 con `supabase/migrations/0002_tipo_movimiento.sql` (añade el tipo "gasto" / "devolución") y después con `supabase/migrations/0003_categoria_deporte.sql` (la categoría Deporte), y después con `supabase/migrations/0004_gastos_fijos.sql` (los gastos fijos). Si más adelante aparecen migraciones nuevas (`0005_…`), ejecútalas también en orden.
 
 > El script se puede ejecutar varias veces sin problema: lo que ya existe se mantiene y lo que falta se crea. Si algo salió a medias, vuelve a ejecutarlo entero.
 

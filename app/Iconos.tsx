@@ -36,6 +36,7 @@ const ORIGEN = {
   wallet: { titulo: "Apple Pay", d: "M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm4 17h2" },
   sms: { titulo: "SMS del banco", d: "M4 5h16v11H9l-5 4V5Z" },
   manual: { titulo: "Añadido a mano", d: "M4 20h4L19 9l-4-4L4 16v4Zm10-14 4 4" },
+  fijo: { titulo: "Gasto fijo", d: "M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4" },
   devolucion: { titulo: "Devolución", d: "M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" },
 } as const;
 

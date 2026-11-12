@@ -6,6 +6,7 @@ import { borrarMovimiento } from "@/app/actions";
 import { formatearImporte } from "@/lib/dates";
 import { AVISO_DEMO } from "@/lib/demo";
 import { conBase } from "@/lib/rutas";
+import type { Movimiento } from "@/lib/types";
 import { IconoCategoria, IconoOrigen } from "./Iconos";
 
 const ANCHO_BORRAR = 88;
@@ -16,7 +17,7 @@ type Props = {
   categoria: string | null;
   importe: number | null;
   moneda: string;
-  origen: "manual" | "wallet" | "sms";
+  origen: Movimiento["origen"];
   revisado: boolean;
   tipo: "gasto" | "reembolso";
   /** Personas entre las que se repartió, si se repartió. */
