@@ -13,7 +13,7 @@
 - Rama `gastos-fijos` lista para revisar; main tiene spec y plan commiteados en local, sin push.
 
 ## Pendientes y bloqueos
-- Ejecutar supabase/migrations/0004_gastos_fijos.sql en Supabase ANTES de desplegar el código.
+- Migración 0004 aplicada en Supabase (2026-11-12).
 - Probar con datos reales tras la migración: crear un fijo desde Añadir, editarlo, pausarlo y reactivarlo.
 - Merge y push de `gastos-fijos`: solo con permiso.
 
