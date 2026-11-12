@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { generarFijos } from "@/lib/generar-fijos";
 import { desplazarMes, parseMes, rangoMes } from "@/lib/dates";
 import { totalImportes } from "@/lib/resumen";
 import { COLUMNAS_MOVIMIENTO, type Movimiento } from "@/lib/types";
@@ -14,6 +15,7 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
   const rangoAnterior = rangoMes(desplazarMes(mes, -1));
 
   const supabase = await createClient();
+  await generarFijos(supabase, ahora);
   const [delMes, delAnterior, pendientes] = await Promise.all([
     supabase
       .from("transactions")
