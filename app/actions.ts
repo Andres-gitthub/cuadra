@@ -200,7 +200,8 @@ export async function guardarGastoFijo(_prev: EstadoFijo, formData: FormData): P
   if (!antes) return fallo("Este gasto fijo ya no existe");
 
   const ultimo_mes = ultimoMesAlGuardar(antes, leido.datos.activo, new Date());
-  const { error } = await supabase.from("gastos_fijos").update({ ...leido.datos, ultimo_mes }).eq("id", id);
+  const cambios = ultimo_mes ? { ...leido.datos, ultimo_mes } : leido.datos;
+  const { error } = await supabase.from("gastos_fijos").update(cambios).eq("id", id);
   if (error) return fallo(`No se pudo guardar: ${error.message}`);
 
   revalidatePath("/");

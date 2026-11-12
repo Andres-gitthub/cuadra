@@ -108,8 +108,10 @@ test("pausado, ya generado o con ultimo_mes futuro: nada", () => {
 
 test("ultimoMesAlGuardar: al reactivar no rellena la pausa ni repite este mes", () => {
   const ahora = new Date("2026-11-12T10:00:00Z");
-  assert.equal(ultimoMesAlGuardar({ activo: true, ultimo_mes: "2026-08-01" }, true, ahora), "2026-08-01");
-  assert.equal(ultimoMesAlGuardar({ activo: true, ultimo_mes: "2026-08-01" }, false, ahora), "2026-08-01");
+  // Sin reactivar no se toca: reescribirlo podría pisar lo que el generador acaba de avanzar y repetir un cargo.
+  assert.equal(ultimoMesAlGuardar({ activo: true, ultimo_mes: "2026-08-01" }, true, ahora), null);
+  assert.equal(ultimoMesAlGuardar({ activo: true, ultimo_mes: "2026-08-01" }, false, ahora), null);
+  assert.equal(ultimoMesAlGuardar({ activo: false, ultimo_mes: "2026-08-01" }, false, ahora), null);
   assert.equal(ultimoMesAlGuardar({ activo: false, ultimo_mes: "2026-05-01" }, true, ahora), "2026-10-01");
   assert.equal(ultimoMesAlGuardar({ activo: false, ultimo_mes: "2026-11-01" }, true, ahora), "2026-11-01");
 });

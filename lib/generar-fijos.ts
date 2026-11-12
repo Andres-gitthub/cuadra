@@ -26,7 +26,12 @@ export async function generarFijos(supabase: SupabaseClient, ahora = new Date())
         console.error("[fijos] insertar", fijo.id, insertado.error.message);
         continue;
       }
-      const actualizado = await supabase.from("gastos_fijos").update({ ultimo_mes: pendiente.ultimo_mes }).eq("id", fijo.id);
+      // Solo avanza: si otra escritura ya lo dejó más adelante, no se retrocede.
+      const actualizado = await supabase
+        .from("gastos_fijos")
+        .update({ ultimo_mes: pendiente.ultimo_mes })
+        .eq("id", fijo.id)
+        .lt("ultimo_mes", pendiente.ultimo_mes);
       if (actualizado.error) console.error("[fijos] ultimo_mes", fijo.id, actualizado.error.message);
     }
   } catch (e) {

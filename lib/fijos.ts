@@ -82,11 +82,17 @@ export function generacionPendiente(
 }
 
 /**
- * `ultimo_mes` al guardar un fijo. Al reactivarlo no se rellenan los meses en pausa: pasa al mes
- * anterior al actual, salvo que ya se hubiera generado este mes (entonces se queda, para no repetirlo).
+ * Nuevo `ultimo_mes` al guardar un fijo, o null si no hay que tocarlo. Solo cambia al reactivarlo:
+ * no se rellenan los meses en pausa, así que pasa al mes anterior al actual, salvo que ya se hubiera
+ * generado este mes (entonces se queda, para no repetirlo). En cualquier otro caso no se reescribe,
+ * porque el generador podría haberlo avanzado mientras tanto y pisarlo repetiría un cargo.
  */
-export function ultimoMesAlGuardar(antes: { activo: boolean; ultimo_mes: string }, activoAhora: boolean, ahora: Date): string {
-  if (antes.activo || !activoAhora) return antes.ultimo_mes;
+export function ultimoMesAlGuardar(
+  antes: { activo: boolean; ultimo_mes: string },
+  activoAhora: boolean,
+  ahora: Date,
+): string | null {
+  if (antes.activo || !activoAhora) return null;
   const anterior = primerDiaDeMes(desplazarMes(mesActual(ahora), -1));
   return antes.ultimo_mes > anterior ? antes.ultimo_mes : anterior;
 }
