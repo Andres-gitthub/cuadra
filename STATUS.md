@@ -1,20 +1,22 @@
 # Estado — Cuadra
-Última actualización: 2026-10-13 (inicial, deducido de README y git)
+Última actualización: 2026-11-12
 
 ## Hecho recientemente
-- 2026-10-09: CI (tipos, tests y build en cada push, también con Node 22.18), engines >=22.18 <25,
-  licencia MIT, npm audit fix (next 16.4.0).
-- Demo pública en https://cuadra-phi-green.vercel.app/demo (según README).
+- 2026-11-12: diseño de gastos fijos (cargos mensuales de importe fijo que el banco no avisa):
+  spec en docs/superpowers/specs/2026-11-12-cuadra-gastos-fijos-design.md.
+- 2026-10-09: CI (tipos, tests y build, también con Node 22.18), engines >=22.18 <25, licencia MIT.
+- Demo pública en https://cuadra-phi-green.vercel.app/demo.
 
 ## En qué punto está
-- Funcional según el README: Inicio, Estadísticas, Pendientes, Añadir; captura por Apple Pay y SMS.
-- main sincronizada con origin/main, sin cambios pendientes.
+- App funcional: Inicio, Estadísticas, Pendientes, Añadir; captura por Apple Pay y SMS.
+- Gastos fijos: spec escrita, pendiente de revisión del usuario. Sin código todavía.
 
 ## Pendientes y bloqueos
-- desconocido
+- Revisar y aprobar la spec de gastos fijos.
+- Al implementar: ejecutar la migración 0004 en Supabase antes de desplegar el código.
 
 ## Siguiente paso recomendado
-- desconocido
+- Tras aprobar la spec, escribir el plan de implementación (docs/superpowers/plans/).
 
 ## Próximas fechas
-- desconocido (no aparece ninguna en los archivos del proyecto a 2026-10-13)
+- ninguna
