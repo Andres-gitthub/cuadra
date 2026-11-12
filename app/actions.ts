@@ -9,6 +9,8 @@ import { rutaSegura } from "@/lib/rutas";
 import { leerFormularioMovimiento, valoresEnviados } from "@/lib/formulario";
 import { aplicarRegla, gastosQueCoinciden } from "@/lib/aprender";
 import { combinarNota } from "@/lib/reparto";
+import { primerDiaDeMes } from "@/lib/fijos";
+import { mesActual } from "@/lib/dates";
 import type { EstadoFormulario } from "@/lib/types";
 
 // ---------- Login (magic link + código de 6 dígitos) ----------
@@ -79,7 +81,7 @@ export async function guardarMovimientoManual(
 
   const leido = leerFormularioMovimiento(formData);
   if (!leido.ok) return fallo(leido.error);
-  const { tipo, importe, comercio, fecha, aprender, reparto } = leido.datos;
+  const { tipo, importe, comercio, fecha, aprender, reparto, repetir } = leido.datos;
   let categoria_id = leido.datos.categoria;
 
   // "Recordar esta categoría": se aprende antes de guardar, para que si falla no se guarde
@@ -105,14 +107,42 @@ export async function guardarMovimientoManual(
     const { error } = await supabase.from("transactions").update({ ...campos, revisado, texto_original }).eq("id", id);
     if (error) return fallo(`No se pudo guardar: ${error.message}`);
   } else {
-    const { error } = await supabase
-      .from("transactions")
-      .insert({ ...campos, texto_original: combinarNota(null, reparto), moneda: "EUR", origen: "manual", revisado: true });
-    if (error) return fallo(`No se pudo guardar: ${error.message}`);
+    // "Repetir cada mes": primero el fijo, para enlazar el movimiento. Este movimiento cuenta como
+    // el del mes de su fecha, así que ultimo_mes empieza ahí.
+    let gasto_fijo_id: string | null = null;
+    if (repetir) {
+      const { data: fijo, error } = await supabase
+        .from("gastos_fijos")
+        .insert({
+          comercio: repetir.comercio,
+          importe,
+          categoria_id,
+          dia: repetir.dia,
+          ultimo_mes: primerDiaDeMes(mesActual(fecha)),
+        })
+        .select("id")
+        .single();
+      if (error) return fallo(`No se pudo crear el gasto fijo: ${error.message}`);
+      gasto_fijo_id = fijo.id;
+    }
+    const { error } = await supabase.from("transactions").insert({
+      ...campos,
+      texto_original: combinarNota(null, reparto),
+      moneda: "EUR",
+      origen: "manual",
+      revisado: true,
+      gasto_fijo_id,
+    });
+    if (error) {
+      // Sin movimiento no debe quedar un fijo a medias: al reintentar se crearía otro.
+      if (gasto_fijo_id) await supabase.from("gastos_fijos").delete().eq("id", gasto_fijo_id);
+      return fallo(`No se pudo guardar: ${error.message}`);
+    }
   }
 
   revalidatePath("/");
   revalidatePath("/pendientes");
+  revalidatePath("/fijos");
   redirect(volver);
 }
 

@@ -2,8 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { guardarMovimientoManual } from "@/app/actions";
-import { estiloCategoria, GRIS, ICONO_AUTOMATICA } from "@/lib/categorias-ui";
-import { Trazo } from "@/app/Iconos";
+import { ChipsCategoria } from "@/app/ChipsCategoria";
 import { claveDeComercio } from "@/lib/aprender";
 import { parseAmount } from "@/lib/amount";
 import { repartir } from "@/lib/reparto";
@@ -44,6 +43,11 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial, dem
   const categoriaId = v?.categoria_id ?? inicial.categoria_id;
   const fecha = v?.fecha ?? inicial.fecha;
 
+  // "Repetir cada mes" (solo al crear): el día del cargo empieza en el día de la fecha elegida.
+  const [repetir, setRepetir] = useState(v?.repetir ?? false);
+  useEffect(() => setRepetir(v?.repetir ?? false), [v?.repetir, estado.intento]);
+  const diaInicial = v?.dia || String(Number(fecha.slice(8, 10)) || 1);
+
   // Palabra que se aprendería con "Recordar", según lo que se va escribiendo en el comercio.
   const [comercioEscrito, setComercioEscrito] = useState(comercio);
   useEffect(() => setComercioEscrito(comercio), [comercio, estado.intento]);
@@ -61,14 +65,6 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial, dem
   const n = Number(personasElegidas);
   const tuParte = total !== null && n > 1 ? repartir(total, n) : null;
 
-  const opciones = [
-    { valor: "auto", texto: "Automática", color: GRIS, icono: ICONO_AUTOMATICA as string | null },
-    ...categorias.map((c) => {
-      const { color, icono } = estiloCategoria(c.nombre);
-      return { valor: c.id, texto: c.nombre, color, icono };
-    }),
-    { valor: "", texto: "Sin categoría", color: GRIS, icono: "M6 12h12" },
-  ];
 
   return (
     <form
@@ -153,6 +149,30 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial, dem
           </summary>
           <input name="fecha" type="datetime-local" defaultValue={fecha} required />
         </details>
+        {!editando && (
+          <label className="campo interruptor solo-gasto">
+            <span>Repetir cada mes</span>
+            <input
+              name="repetir"
+              type="checkbox"
+              role="switch"
+              defaultChecked={repetir}
+              onChange={(e) => setRepetir(e.target.checked)}
+            />
+          </label>
+        )}
+        {!editando && repetir && (
+          <label className="campo solo-gasto">
+            <span>Día del cargo</span>
+            <select name="dia" defaultValue={diaInicial}>
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {editando && (
           <label className="campo interruptor">
             <span>Revisado</span>
@@ -161,22 +181,7 @@ export function MovimientoForm({ categorias, volver, etiquetaFecha, inicial, dem
         )}
       </div>
 
-      <fieldset className="chips">
-        <legend>Categoría</legend>
-        {opciones.map((o) => (
-          <label
-            key={o.valor || "sin"}
-            className={`chip${o.valor === "auto" ? " solo-gasto" : ""}`}
-            style={{ "--cat": o.color } as React.CSSProperties}
-          >
-            <input type="radio" name="categoria_id" value={o.valor} defaultChecked={o.valor === categoriaId} />
-            <span>
-              {o.icono ? <Trazo d={o.icono} tamaño={18} /> : <span className="chip-inicial">{o.texto.charAt(0)}</span>}
-              {o.texto}
-            </span>
-          </label>
-        ))}
-      </fieldset>
+      <ChipsCategoria categorias={categorias} seleccionada={categoriaId} conAutomatica />
 
       <label className="recordar solo-gasto">
         <input type="checkbox" name="recordar" defaultChecked={v?.recordar ?? false} />
