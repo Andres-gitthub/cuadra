@@ -1,4 +1,4 @@
-import type { ValoresFormulario } from "./formulario.ts";
+import type { ValoresFijo, ValoresFormulario } from "./formulario.ts";
 
 export type Categoria = { id: string; nombre: string };
 
@@ -41,3 +41,6 @@ export const COLUMNAS_FIJO = "id, comercio, importe, categoria_id, dia, activo, 
 
 /** Estado del formulario de movimientos. Tras un error trae lo enviado, para no perderlo al reiniciarse el formulario. */
 export type EstadoFormulario = { error: string | null; valores?: ValoresFormulario; intento?: number };
+
+/** Estado del formulario de un gasto fijo, igual que EstadoFormulario. */
+export type EstadoFijo = { error: string | null; valores?: ValoresFijo; intento?: number };

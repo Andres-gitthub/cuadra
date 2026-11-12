@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { leerFormularioMovimiento, valoresEnviados } from "../lib/formulario.ts";
+import { leerFormularioFijo, leerFormularioMovimiento, valoresEnviados, valoresFijoEnviados } from "../lib/formulario.ts";
 
 function fd(campos: Record<string, string>): FormData {
   const f = new FormData();
@@ -61,6 +61,8 @@ test("valoresEnviados conserva lo escrito para volver a mostrarlo tras un error"
     fecha: "2026-09-28T13:00",
     recordar: false,
     personas: "1",
+    repetir: false,
+    dia: "",
   });
   assert.equal(valoresEnviados(fd(base)).tipo, "gasto");
   assert.equal(valoresEnviados(fd({ ...base, recordar: "on" })).recordar, true);
@@ -121,4 +123,71 @@ test("personas fuera de rango o no numérico se rechaza", () => {
 test("una devolución no se reparte", () => {
   const r = leerFormularioMovimiento(fd({ ...base, tipo: "reembolso", personas: "3" }));
   assert.ok(r.ok && r.datos.importe === 45 && r.datos.reparto === null);
+});
+
+test("repetir cada mes: un gasto nuevo con comercio y día", () => {
+  const r = leerFormularioMovimiento(fd({ ...base, tipo: "gasto", comercio: "Alquiler", repetir: "on", dia: "1" }));
+  assert.ok(r.ok);
+  assert.deepEqual(r.datos.repetir, { dia: 1, comercio: "Alquiler" });
+  const sin = leerFormularioMovimiento(fd({ ...base, tipo: "gasto" }));
+  assert.ok(sin.ok && sin.datos.repetir === null);
+});
+
+test("repetir cada mes exige comercio y un día de 1 a 31", () => {
+  assert.deepEqual(leerFormularioMovimiento(fd({ ...base, tipo: "gasto", comercio: "", repetir: "on", dia: "1" })), {
+    ok: false,
+    error: "Escribe el comercio para repetirlo cada mes",
+  });
+  for (const dia of ["0", "32", "", "abc", "1.5"]) {
+    assert.deepEqual(leerFormularioMovimiento(fd({ ...base, tipo: "gasto", repetir: "on", dia })), {
+      ok: false,
+      error: "Elige el día del cargo (del 1 al 31)",
+    });
+  }
+});
+
+test("repetir se ignora en devoluciones y al editar", () => {
+  const devolucion = leerFormularioMovimiento(fd({ ...base, tipo: "reembolso", repetir: "on", dia: "99" }));
+  assert.ok(devolucion.ok && devolucion.datos.repetir === null);
+  const editando = leerFormularioMovimiento(fd({ ...base, tipo: "gasto", id: "x", repetir: "on", dia: "99" }));
+  assert.ok(editando.ok && editando.datos.repetir === null);
+});
+
+test("valoresEnviados conserva repetir y el día", () => {
+  const v = valoresEnviados(fd({ ...base, repetir: "on", dia: "7" }));
+  assert.equal(v.repetir, true);
+  assert.equal(v.dia, "7");
+});
+
+const baseFijo = { importe: "650", comercio: "Alquiler", categoria_id: "hogar", dia: "1", activo: "on" };
+
+test("formulario de fijo válido", () => {
+  assert.deepEqual(leerFormularioFijo(fd(baseFijo)), {
+    ok: true,
+    datos: { importe: 650, comercio: "Alquiler", categoria_id: "hogar", dia: 1, activo: true },
+  });
+  const pausado = leerFormularioFijo(fd({ ...baseFijo, activo: "", categoria_id: "" }));
+  assert.ok(pausado.ok && pausado.datos.activo === false && pausado.datos.categoria_id === null);
+});
+
+test("formulario de fijo: errores", () => {
+  assert.deepEqual(leerFormularioFijo(fd({ ...baseFijo, importe: "abc" })), {
+    ok: false,
+    error: "Importe no válido (ej.: 12,50)",
+  });
+  assert.deepEqual(leerFormularioFijo(fd({ ...baseFijo, comercio: "  " })), { ok: false, error: "Escribe el comercio" });
+  assert.deepEqual(leerFormularioFijo(fd({ ...baseFijo, dia: "32" })), {
+    ok: false,
+    error: "Elige el día del cargo (del 1 al 31)",
+  });
+});
+
+test("valoresFijoEnviados conserva lo escrito", () => {
+  assert.deepEqual(valoresFijoEnviados(fd({ ...baseFijo, importe: "6,5,0" })), {
+    importe: "6,5,0",
+    comercio: "Alquiler",
+    categoria_id: "hogar",
+    dia: "1",
+    activo: true,
+  });
 });

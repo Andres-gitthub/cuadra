@@ -5,6 +5,16 @@ import type { TipoMovimiento } from "./types.ts";
 import { claveDeComercio } from "./aprender.ts";
 import { repartir, type Reparto } from "./reparto.ts";
 
+/** "1".."31" → número; cualquier otra cosa → null. */
+function leerDia(valor: FormDataEntryValue | null): number | null {
+  const texto = typeof valor === "string" ? valor : "";
+  if (!/^\d{1,2}$/.test(texto)) return null;
+  const dia = Number(texto);
+  return dia >= 1 && dia <= 31 ? dia : null;
+}
+
+const ERROR_DIA = "Elige el día del cargo (del 1 al 31)";
+
 export type DatosMovimiento = {
   tipo: TipoMovimiento;
   importe: number;
@@ -16,6 +26,8 @@ export type DatosMovimiento = {
   aprender: string | null;
   /** Si se repartió a partes iguales: total pagado y personas (importe ya es tu parte). */
   reparto: Reparto | null;
+  /** "Repetir cada mes" (solo al crear un gasto): día del cargo y nombre del fijo. */
+  repetir: { dia: number; comercio: string } | null;
 };
 
 /** Valida el formulario de alta/edición. No toca la base de datos. */
@@ -52,7 +64,16 @@ export function leerFormularioMovimiento(fd: FormData): { ok: true; datos: Datos
     if (!aprender) return { ok: false, error: "El comercio necesita al menos 3 letras para poder recordarlo" };
   }
 
-  return { ok: true, datos: { tipo: tipoCrudo, importe, comercio, fecha, categoria, aprender, reparto } };
+  // "Repetir cada mes": solo al crear un gasto. En devoluciones y al editar se ignora.
+  let repetir: { dia: number; comercio: string } | null = null;
+  if (fd.get("repetir") === "on" && tipoCrudo === "gasto" && !fd.get("id")) {
+    if (!comercio) return { ok: false, error: "Escribe el comercio para repetirlo cada mes" };
+    const dia = leerDia(fd.get("dia"));
+    if (dia === null) return { ok: false, error: ERROR_DIA };
+    repetir = { dia, comercio };
+  }
+
+  return { ok: true, datos: { tipo: tipoCrudo, importe, comercio, fecha, categoria, aprender, reparto, repetir } };
 }
 
 export type ValoresFormulario = {
@@ -63,6 +84,8 @@ export type ValoresFormulario = {
   fecha: string;
   recordar: boolean;
   personas: string;
+  repetir: boolean;
+  dia: string;
 };
 
 /**
@@ -82,5 +105,38 @@ export function valoresEnviados(fd: FormData): ValoresFormulario {
     fecha: texto("fecha"),
     recordar: fd.get("recordar") === "on",
     personas: texto("personas") || "1",
+    repetir: fd.get("repetir") === "on",
+    dia: texto("dia"),
+  };
+}
+
+// ---------- Gasto fijo (pantalla /fijos/[id]) ----------
+
+export type DatosFijo = { importe: number; comercio: string; categoria_id: string | null; dia: number; activo: boolean };
+
+export function leerFormularioFijo(fd: FormData): { ok: true; datos: DatosFijo } | { ok: false; error: string } {
+  const importe = parseAmount(String(fd.get("importe") ?? ""));
+  if (importe === null) return { ok: false, error: "Importe no válido (ej.: 12,50)" };
+  const comercio = limpiarComercio(String(fd.get("comercio") ?? ""));
+  if (!comercio) return { ok: false, error: "Escribe el comercio" };
+  const dia = leerDia(fd.get("dia"));
+  if (dia === null) return { ok: false, error: ERROR_DIA };
+  const categoria_id = String(fd.get("categoria_id") ?? "") || null;
+  return { ok: true, datos: { importe, comercio, categoria_id, dia, activo: fd.get("activo") === "on" } };
+}
+
+export type ValoresFijo = { importe: string; comercio: string; categoria_id: string; dia: string; activo: boolean };
+
+export function valoresFijoEnviados(fd: FormData): ValoresFijo {
+  const texto = (k: string) => {
+    const v = fd.get(k);
+    return typeof v === "string" ? v : "";
+  };
+  return {
+    importe: texto("importe"),
+    comercio: texto("comercio"),
+    categoria_id: texto("categoria_id"),
+    dia: texto("dia"),
+    activo: fd.get("activo") === "on",
   };
 }
