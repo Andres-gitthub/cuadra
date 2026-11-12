@@ -6,12 +6,12 @@ import { revalidatePath } from "next/cache";
 import { createClient, requireUser } from "@/lib/supabase/server";
 import { categorize } from "@/lib/categorize";
 import { rutaSegura } from "@/lib/rutas";
-import { leerFormularioMovimiento, valoresEnviados } from "@/lib/formulario";
+import { leerFormularioFijo, leerFormularioMovimiento, valoresEnviados, valoresFijoEnviados } from "@/lib/formulario";
 import { aplicarRegla, gastosQueCoinciden } from "@/lib/aprender";
 import { combinarNota } from "@/lib/reparto";
-import { primerDiaDeMes } from "@/lib/fijos";
+import { primerDiaDeMes, ultimoMesAlGuardar } from "@/lib/fijos";
 import { mesActual } from "@/lib/dates";
-import type { EstadoFormulario } from "@/lib/types";
+import type { EstadoFijo, EstadoFormulario } from "@/lib/types";
 
 // ---------- Login (magic link + código de 6 dígitos) ----------
 
@@ -181,3 +181,39 @@ export async function borrarMovimiento(formData: FormData) {
   redirect(volver);
 }
 
+// ---------- Gastos fijos ----------
+
+export async function guardarGastoFijo(_prev: EstadoFijo, formData: FormData): Promise<EstadoFijo> {
+  const { supabase } = await requireUser();
+  const fallo = (error: string): EstadoFijo => ({ error, valores: valoresFijoEnviados(formData), intento: Date.now() });
+
+  const id = String(formData.get("id") ?? "");
+  const leido = leerFormularioFijo(formData);
+  if (!leido.ok) return fallo(leido.error);
+
+  const { data: antes, error: errorLeer } = await supabase
+    .from("gastos_fijos")
+    .select("activo, ultimo_mes")
+    .eq("id", id)
+    .maybeSingle();
+  if (errorLeer) return fallo(`No se pudo guardar: ${errorLeer.message}`);
+  if (!antes) return fallo("Este gasto fijo ya no existe");
+
+  const ultimo_mes = ultimoMesAlGuardar(antes, leido.datos.activo, new Date());
+  const { error } = await supabase.from("gastos_fijos").update({ ...leido.datos, ultimo_mes }).eq("id", id);
+  if (error) return fallo(`No se pudo guardar: ${error.message}`);
+
+  revalidatePath("/");
+  revalidatePath("/fijos");
+  redirect("/fijos");
+}
+
+/** Borra el fijo. Sus movimientos ya creados se quedan (gasto_fijo_id pasa a null). */
+export async function borrarGastoFijo(formData: FormData) {
+  const { supabase } = await requireUser();
+  const id = String(formData.get("id") ?? "");
+  if (id) await supabase.from("gastos_fijos").delete().eq("id", id);
+  revalidatePath("/");
+  revalidatePath("/fijos");
+  redirect("/fijos");
+}

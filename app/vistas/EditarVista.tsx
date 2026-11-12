@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatearFecha, utcAHoraLocal } from "@/lib/dates";
 import { leerReparto, quitarNotaReparto } from "@/lib/reparto";
+import { BASE_DEMO, conBase } from "@/lib/rutas";
 import type { Categoria, Movimiento } from "@/lib/types";
 import { MovimientoForm } from "../movimiento/MovimientoForm";
 import { BorrarBoton } from "../movimiento/[id]/BorrarBoton";
@@ -36,6 +37,13 @@ export function EditarVista({ movimiento: m, categorias, volver, demo }: DatosEd
           <span className="etiqueta">Texto original</span>
           {textoOriginal}
         </blockquote>
+      )}
+
+      {m.gasto_fijo_id && (
+        <Link href={conBase(demo ? BASE_DEMO : "", "/fijos")} className="tarjeta enlace-fijos">
+          <span>Gasto fijo</span>
+          <span className="subtitulo">ver fijos ›</span>
+        </Link>
       )}
 
       <MovimientoForm

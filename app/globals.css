@@ -1280,3 +1280,24 @@ button {
   padding: 12px 0;
   outline-offset: 2px;
 }
+
+/* Gastos fijos */
+.enlace-fijos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.lista-fijos li + li .fila {
+  border-top: 1px solid var(--relleno);
+}
+
+.lista-fijos .pausado {
+  opacity: 0.55;
+}

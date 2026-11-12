@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { claveMes, desplazarMes, formatearImporte, mesActual, nombreMes, type Mes } from "@/lib/dates";
 import { cuentaMovimientos, desglosePorCategoria, diferenciaConAnterior, totalImportes } from "@/lib/resumen";
 import { ritmoDelMes } from "@/lib/estadisticas";
@@ -19,6 +20,8 @@ export type DatosInicio = {
   /** Gasto neto del mes anterior, para la comparación. */
   totalAnterior: number;
   pendientes: number;
+  /** Cuántos gastos fijos hay y cuánto suman al mes los activos. */
+  fijos?: { cuantos: number; alMes: number };
   /** Categoría por la que se filtra la lista ("sin" = sin categoría). */
   cat?: string;
   error?: string | null;
@@ -27,7 +30,7 @@ export type DatosInicio = {
 };
 
 /** Pantalla de Inicio a partir de los datos ya leídos: no consulta nada. */
-export function InicioVista({ mes, ahora, movimientos, totalAnterior, pendientes, cat, error, base = "" }: DatosInicio) {
+export function InicioVista({ mes, ahora, movimientos, totalAnterior, pendientes, fijos, cat, error, base = "" }: DatosInicio) {
   const anterior = desplazarMes(mes, -1);
   const esActual = claveMes(mes) === claveMes(mesActual(ahora));
   const total = totalImportes(movimientos);
@@ -67,6 +70,13 @@ export function InicioVista({ mes, ahora, movimientos, totalAnterior, pendientes
             <span className="subtitulo">{cuentaMovimientos(movimientos)}</span>
           </div>
         </CabeceraLibreta>
+
+        {fijos && fijos.cuantos > 0 && (
+          <Link href={conBase(base, "/fijos")} className="tarjeta enlace-fijos">
+            <span>Gastos fijos · {fijos.cuantos}</span>
+            <span className="subtitulo">{formatearImporte(fijos.alMes)} al mes ›</span>
+          </Link>
+        )}
 
         {error && <p className="error">Error cargando datos: {error}</p>}
 

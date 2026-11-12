@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generarFijos } from "@/lib/generar-fijos";
 import { desplazarMes, parseMes, rangoMes } from "@/lib/dates";
 import { totalImportes } from "@/lib/resumen";
+import { resumenFijos } from "@/lib/fijos";
 import { COLUMNAS_MOVIMIENTO, type Movimiento } from "@/lib/types";
 import { InicioVista } from "./vistas/InicioVista";
 
@@ -16,7 +17,7 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
 
   const supabase = await createClient();
   await generarFijos(supabase, ahora);
-  const [delMes, delAnterior, pendientes] = await Promise.all([
+  const [delMes, delAnterior, pendientes, fijos] = await Promise.all([
     supabase
       .from("transactions")
       .select(COLUMNAS_MOVIMIENTO)
@@ -31,9 +32,10 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
       .lt("fecha", rangoAnterior.hasta.toISOString())
       .not("importe", "is", null),
     supabase.from("transactions").select("id", { count: "exact", head: true }).eq("revisado", false),
+    supabase.from("gastos_fijos").select("importe, activo"),
   ]);
 
-  const error = delMes.error ?? delAnterior.error ?? pendientes.error;
+  const error = delMes.error ?? delAnterior.error ?? pendientes.error ?? fijos.error;
 
   return (
     <InicioVista
@@ -42,6 +44,7 @@ export default async function Home({ searchParams }: { searchParams: Params }) {
       movimientos={(delMes.data ?? []) as unknown as Movimiento[]}
       totalAnterior={totalImportes(delAnterior.data ?? [])}
       pendientes={pendientes.count ?? 0}
+      fijos={resumenFijos(fijos.data ?? [])}
       cat={sp.cat}
       error={error?.message}
     />
