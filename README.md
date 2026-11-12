@@ -30,7 +30,7 @@ The other thing a bank statement gets wrong is what I actually spent. If I pay a
 | **Inicio** (Home) | How much have I spent this month, and is it more or less than last month? A stacked bar splits it by category (tap one to filter the list), and below it every movement, grouped by day with daily subtotals. Swipe a row to delete it. |
 | **Estadísticas** (Stats) | Am I on pace? The average per day, a bar for every day of the month against that average, and a month-end forecast at the current pace. Plus where the money goes by merchant, and how each category moved against last month. |
 | **Pendientes** (To review) | Bank messages the parser couldn't read with certainty, shown with their original text so I can complete or discard them. |
-| **Añadir** (Add) | Manual entry for anything that isn't captured, or money paid back to me. Any expense, including one captured automatically, can be opened and split equally between people, and then only my share is stored. |
+| **Añadir** (Add) | Manual entry for anything that isn't captured, or money paid back to me. Any expense, including one captured automatically, can be opened and split equally between people, and then only my share is stored. Tick *Repeat every month* for a fixed bill the bank doesn't notify (rent, insurance): Cuadra adds it on its day each month, and the *Fixed expenses* screen edits, pauses or deletes it. |
 
 In the background:
 
