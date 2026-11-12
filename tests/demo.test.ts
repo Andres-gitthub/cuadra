@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CATEGORIAS_DEMO, movimientoDemoPorId, movimientosDemo, pendientesDemo } from "../lib/demo.ts";
+import { CATEGORIAS_DEMO, GASTOS_FIJOS_DEMO, fijoDemoPorId, movimientoDemoPorId, movimientosDemo, pendientesDemo } from "../lib/demo.ts";
 import { rangoMes } from "../lib/dates.ts";
 import { agruparPorDia, desglosePorCategoria, totalImportes } from "../lib/resumen.ts";
 import { leerReparto } from "../lib/reparto.ts";
@@ -75,4 +75,23 @@ test("demo: un movimiento se encuentra por su id, de este mes o de uno pasado", 
   assert.deepEqual(movimientoDemoPorId(deAgosto.id, AHORA), deAgosto);
   assert.equal(movimientoDemoPorId("demo-2026-09-9999", AHORA), null);
   assert.equal(movimientoDemoPorId("8d0e5f3a-real-uuid", AHORA), null);
+});
+
+test("demo: los gastos fijos salen como movimientos del mes con su fijo", () => {
+  const movs = movimientosDemo(SEPT, AHORA);
+  const activos = GASTOS_FIJOS_DEMO.filter((f) => f.activo);
+  assert.ok(activos.length >= 2 && GASTOS_FIJOS_DEMO.some((f) => !f.activo), "activos y uno en pausa");
+  for (const f of activos) {
+    const m = movs.find((x) => x.gasto_fijo_id === f.id);
+    assert.ok(m, f.comercio);
+    assert.equal(m.origen, "fijo");
+    assert.equal(m.importe, f.importe);
+    assert.equal(m.comercio, f.comercio);
+    assert.equal(Number(m.fecha.slice(8, 10)), f.dia);
+  }
+  for (const f of GASTOS_FIJOS_DEMO.filter((x) => !x.activo)) {
+    assert.ok(!movs.some((x) => x.gasto_fijo_id === f.id), "un fijo en pausa no genera nada");
+  }
+  assert.equal(fijoDemoPorId(GASTOS_FIJOS_DEMO[0].id), GASTOS_FIJOS_DEMO[0]);
+  assert.equal(fijoDemoPorId("no-existe"), null);
 });

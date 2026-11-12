@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { desplazarMes, parseMes } from "@/lib/dates";
-import { movimientosDemo, pendientesDemo } from "@/lib/demo";
+import { GASTOS_FIJOS_DEMO, movimientosDemo, pendientesDemo } from "@/lib/demo";
+import { resumenFijos } from "@/lib/fijos";
 import { totalImportes } from "@/lib/resumen";
 import { BASE_DEMO } from "@/lib/rutas";
 import { InicioVista } from "../vistas/InicioVista";
@@ -20,6 +21,7 @@ export default async function DemoInicio({ searchParams }: { searchParams: Param
       movimientos={movimientosDemo(mes, ahora)}
       totalAnterior={totalImportes(movimientosDemo(desplazarMes(mes, -1), ahora))}
       pendientes={pendientesDemo(ahora).length}
+      fijos={resumenFijos(GASTOS_FIJOS_DEMO)}
       cat={sp.cat}
       base={BASE_DEMO}
     />

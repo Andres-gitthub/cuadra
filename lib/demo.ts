@@ -1,6 +1,6 @@
 import { claveDia, horaLocalAUtc, mesActual, type Mes } from "./dates.ts";
 import { combinarNota } from "./reparto.ts";
-import type { Categoria, Movimiento, TipoMovimiento } from "./types.ts";
+import type { Categoria, GastoFijo, Movimiento, TipoMovimiento } from "./types.ts";
 
 // Datos inventados para la demo pública: nada sale de la base de datos ni de cuentas reales.
 // Son deterministas: el mismo mes da siempre los mismos movimientos, para que las capturas se puedan repetir.
@@ -46,7 +46,7 @@ const HABITUALES: { comercio: string; categoria: NombreCategoria; min: number; m
   { comercio: "Leroy Merlin", categoria: "Hogar", min: 6, max: 48, peso: 1 },
 ];
 
-type Fijo = {
+type Recurrente = {
   dia: number;
   hora: string;
   comercio: string;
@@ -55,11 +55,24 @@ type Fijo = {
   origen: Movimiento["origen"];
   tipo?: TipoMovimiento;
   reparto?: { total: number; personas: number };
+  gasto_fijo_id?: string;
 };
 
+/** Gastos fijos de la demo: dos activos y uno en pausa. */
+export const GASTOS_FIJOS_DEMO: GastoFijo[] = [
+  { id: "demo-fijo-alquiler", comercio: "Alquiler piso", importe: 650, categoria_id: idCategoria("Hogar"), dia: 1, activo: true, ultimo_mes: "2000-01-01", categories: { nombre: "Hogar" } },
+  { id: "demo-fijo-gimnasio", comercio: "Basic-Fit", importe: 29.99, categoria_id: idCategoria("Deporte"), dia: 1, activo: true, ultimo_mes: "2000-01-01", categories: { nombre: "Deporte" } },
+  { id: "demo-fijo-ingles", comercio: "Academia de inglés", importe: 45, categoria_id: idCategoria("Ocio"), dia: 5, activo: false, ultimo_mes: "2000-01-01", categories: { nombre: "Ocio" } },
+];
+
+export function fijoDemoPorId(id: string): GastoFijo | null {
+  return GASTOS_FIJOS_DEMO.find((f) => f.id === id) ?? null;
+}
+
 /** Lo que se repite cada mes. Lo que enseña devoluciones y repartos va en los primeros días para que se vea pronto. */
-const FIJOS: Fijo[] = [
-  { dia: 1, hora: "07:30", comercio: "Basic-Fit", categoria: "Deporte", importe: 29.99, origen: "sms" },
+const RECURRENTES: Recurrente[] = [
+  { dia: 1, hora: "12:00", comercio: "Alquiler piso", categoria: "Hogar", importe: 650, origen: "fijo", gasto_fijo_id: "demo-fijo-alquiler" },
+  { dia: 1, hora: "12:00", comercio: "Basic-Fit", categoria: "Deporte", importe: 29.99, origen: "fijo", gasto_fijo_id: "demo-fijo-gimnasio" },
   { dia: 2, hora: "21:40", comercio: "Sushi Shop", categoria: "Restaurantes", importe: 54, origen: "wallet" },
   { dia: 3, hora: "10:25", comercio: "Bizum de Lucía", categoria: "Restaurantes", importe: 27, origen: "manual", tipo: "reembolso" },
   { dia: 4, hora: "06:00", comercio: "Netflix", categoria: "Suscripciones", importe: 12.99, origen: "sms" },
@@ -123,6 +136,7 @@ export function movimientosDemo(mes: Mes, ahora = new Date()): Movimiento[] {
       texto_original: null,
       revisado: true,
       tipo: "gasto",
+      gasto_fijo_id: null,
       categories: null,
       ...datos,
     });
@@ -147,13 +161,14 @@ export function movimientosDemo(mes: Mes, ahora = new Date()): Movimiento[] {
     }
   }
 
-  for (const f of FIJOS) {
+  for (const f of RECURRENTES) {
     if (f.dia > diasDelMes) continue;
     añadir(f.dia, f.hora, {
       importe: f.importe,
       comercio: f.comercio,
       origen: f.origen,
       tipo: f.tipo ?? "gasto",
+      gasto_fijo_id: f.gasto_fijo_id ?? null,
       texto_original: f.reparto ? combinarNota(null, f.reparto) : textoOriginal(f.origen, f.comercio, f.importe),
       ...deCategoria(f.categoria),
     });
